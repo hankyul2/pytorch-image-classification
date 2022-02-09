@@ -13,11 +13,18 @@ def get_args():
     parser.add_argument('--std', type=float, default=(0.5, 0.5, 0.5), nargs='+', help='image std')
     parser.add_argument('-hf', '--hflip', type=float, default=0.5, help='random horizontal flip')
     parser.add_argument('-aa', '--auto-aug', type=str, default=None, help='rand augmentation')
+    parser.add_argument('--cutmix', type=float, default=0.5, help='cutmix probability')
+    parser.add_argument('--mixup', type=float, default=0.5, help='mix probability')
     parser.add_argument('-re', '--remode', type=float, default=0.2, help='random erasing probability')
     parser.add_argument('--aug-repeat', type=int, default=None, help='repeat augmentation')
 
     # model
     parser.add_argument('-m', '--model-name', type=str, default='resnet50', help='model name')
+
+    # train time
+    parser.add_argument('-b', '--batch-size', type=int, default=256, help='batch size')
+    parser.add_argument('-j', '--num-workers', type=int, default=8, help='number of workers')
+    parser.add_argument('--pin-memory', action='store_true', default=False, help='pin memory in dataloader')
 
     # setup
     parser.add_argument('-proj', '--project-name', type=str, default='pytorch-image-classification', help='project name used for wandb logger')
