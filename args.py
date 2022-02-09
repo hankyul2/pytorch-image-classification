@@ -12,8 +12,9 @@ def get_args():
     parser.add_argument('--mean', type=float, default=(0.5, 0.5, 0.5), nargs='+', help='image mean')
     parser.add_argument('--std', type=float, default=(0.5, 0.5, 0.5), nargs='+', help='image std')
     parser.add_argument('-hf', '--hflip', type=float, default=0.5, help='random horizontal flip')
-    parser.add_argument('-aa', '--auto_aug', type=str, default=None, help='rand augmentation')
+    parser.add_argument('-aa', '--auto-aug', type=str, default=None, help='rand augmentation')
     parser.add_argument('-re', '--remode', type=float, default=0.2, help='random erasing probability')
+    parser.add_argument('--aug-repeat', type=int, default=None, help='repeat augmentation')
 
     # model
     parser.add_argument('-m', '--model-name', type=str, default='resnet50', help='model name')
