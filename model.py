@@ -49,8 +49,6 @@ class ModelEmaV2(nn.Module):
 
 
 def get_model(args):
-    # Todo: Model seems to be duplicated. Should fix this
-
     model = torchvision.models.__dict__[args.model_name](num_classes=args.num_classes).cuda(args.device)
 
     if args.channels_last:

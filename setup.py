@@ -42,7 +42,9 @@ def init_distributed_mode(args):
         print('| Not using distributed mode')
         args.distributed = False
         args.gpu = 0
-    return
+
+    torch.cuda.set_device(args.gpu)
+    args.device = torch.device(f'cuda:{args.gpu}')
 
 
 def setup(args):
@@ -53,7 +55,6 @@ def setup(args):
         args.log_dir = os.path.join(args.output_dir, args.exp_name)
 
     Path(args.log_dir).mkdir(parents=True, exist_ok=True)
-    args.device = torch.device(f'cuda:{args.gpu}')
 
     print("| Project Name:", args.project_name)
     print("| Experiment Name:", args.exp_name)
