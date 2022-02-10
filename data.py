@@ -63,7 +63,15 @@ class ImageNetVal:
 
 
 class RepeatAugSampler(Sampler):
-    """Sampler that restricts data loading to a subset of the dataset for distributed,
+    """RASampler ported from timm.
+    This is introduced in https://arxiv.org/pdf/1902.05509.pdf.
+    Repeated Sampler only samples subset of train dataset.
+    Subset of train dataset is duplicated with strong augmentation.
+    By learning differently augmented image, we can regularize model with large batch size.
+    This technique is very important for larger batch size, but decrease performance for smaller batch size.
+
+    Original description:
+    Sampler that restricts data loading to a subset of the dataset for distributed,
     with repeated augmentation.
     It ensures that different each augmented version of a sample will be visible to a
     different process (GPU). Heavily based on torch.utils.data.DistributedSampler
@@ -194,6 +202,7 @@ class CutMix:
 def get_data(args):
     train_dataset = ImageFolder(os.path.join(args.data_dir, 'train'), ImageNetTrain(args.train_resize, args.hflip, args.auto_aug, args.remode, args.interpolation, args.mean, args.std))
     val_dataset = ImageFolder(os.path.join(args.data_dir, 'val'), ImageNetVal(args.test_resize, args.crop_ptr, args.interpolation, args.mean, args.std))
+    args.num_classes = len(train_dataset.classes)
 
     if args.distributed:
         if args.aug_repeat:

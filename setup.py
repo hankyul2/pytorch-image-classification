@@ -22,6 +22,9 @@ def setup_for_distributed(is_master):
 
 
 def init_distributed_mode(args):
+    os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda
+
     if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
         args.distributed = True
         args.rank = int(os.environ['RANK'])
@@ -50,7 +53,7 @@ def setup(args):
         args.log_dir = os.path.join(args.output_dir, args.exp_name)
 
     Path(args.log_dir).mkdir(parents=True, exist_ok=True)
-    device = torch.device(f'cuda:{args.gpu}')
+    args.device = torch.device(f'cuda:{args.gpu}')
 
     print("| Project Name:", args.project_name)
     print("| Experiment Name:", args.exp_name)
@@ -66,6 +69,3 @@ def setup(args):
         torch.use_deterministic_algorithms(True)
     else:
         torch.backends.cudnn.benchmark = True
-
-    return device
-

@@ -20,11 +20,15 @@ def get_args():
 
     # model
     parser.add_argument('-m', '--model-name', type=str, default='resnet50', help='model name')
+    parser.add_argument('--sync-bn', action='store_true', default=False, help='apply sync batchnorm')
+    parser.add_argument('--ema-decay', type=float, default=0.99999, help='exponential model average decay')
 
     # train time
     parser.add_argument('-b', '--batch-size', type=int, default=256, help='batch size')
     parser.add_argument('-j', '--num-workers', type=int, default=8, help='number of workers')
     parser.add_argument('--pin-memory', action='store_true', default=False, help='pin memory in dataloader')
+    parser.add_argument('--channels-last', action='store_true', default=False, help='change memory format to channels last')
+    parser.add_argument('--cuda', type=str, default='0,1,2,3,4,5,6,7,8', help='CUDA_VISIBLE_DEVICES options')
 
     # setup
     parser.add_argument('-proj', '--project-name', type=str, default='pytorch-image-classification', help='project name used for wandb logger')
