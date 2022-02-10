@@ -4,11 +4,13 @@
 ## Tutorial
 How to run this?
 ```bash
-CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=2,3 torchrun --nproc_per_node=2 pt_elastic.py
+torchrun --nproc_per_node=2 train.py imageNet --cuda 7,8 
+```
+
+```bash
+python3 train.py imageNet --cuda 7 
 ```
 
 What does each variable mean?
-- CUDA_DEVICE_ORDER - control device order
-- CUDA_VISIBLE_DEVICES - control device id
 - nproc_per_node - control parallelism
-- device - control between cpu and gpu
+- cuda - control which gpu device to use
