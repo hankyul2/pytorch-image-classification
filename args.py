@@ -23,6 +23,25 @@ def get_args():
     parser.add_argument('--sync-bn', action='store_true', default=False, help='apply sync batchnorm')
     parser.add_argument('--ema-decay', type=float, default=0.99999, help='exponential model average decay')
 
+    # optimizer
+    parser.add_argument('--lr', type=float, default=1e-3, help='learning rate(lr)')
+    parser.add_argument('--epoch', type=int, default=100, help='epoch')
+    parser.add_argument('--optimizer', type=str, default='adamw', help='optimizer name')
+    parser.add_argument('--momentum', type=float, default=0.9, help='optimizer momentum')
+    parser.add_argument('--weight-decay', type=float, default=1e-3, help='optimizer weight decay')
+    parser.add_argument('--nesterov', action='store_true', default=False, help='use nesterov momentum')
+    parser.add_argument('--betas', type=float, nargs=2, default=[0.9, 0.999], help='adam optimizer beta parameter')
+    parser.add_argument('--eps', type=float, default=1e-6, help='optimizer eps')
+
+    # scheduler
+    parser.add_argument('--scheduler', type=str, default='cosine', help='lr scheduler')
+    parser.add_argument('--step-size', type=int, default=2, help='lr decay step size')
+    parser.add_argument('--decay-rate', type=float, default=0.1, help='lr decay rate')
+    parser.add_argument('--min-lr', type=float, default=1e-6, help='lowest lr used for cosine scheduler')
+    parser.add_argument('--warmup-scheduler', type=str, default='linear', help='warmup lr scheduler type')
+    parser.add_argument('--warmup-lr', type=float, default=1e-4, help='warmup start lr')
+    parser.add_argument('--warmup-epoch', type=int, default=5, help='warmup epoch')
+
     # train time
     parser.add_argument('-b', '--batch-size', type=int, default=256, help='batch size')
     parser.add_argument('-j', '--num-workers', type=int, default=8, help='number of workers')
