@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
+from torch.cuda.amp import GradScaler
 from torch.optim import SGD, AdamW, RMSprop
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, LambdaLR, SequentialLR, ExponentialLR
 
@@ -52,6 +53,7 @@ class BinaryCrossEntropy(nn.Module):
             label_smoothing: multi-class loss in bce.
             bce_target: remove uncertain target used with cutmix.
         """
+        super(BinaryCrossEntropy, self).__init__()
         self.smoothing = label_smoothing
         self.bce_target = bce_target
 
@@ -66,9 +68,26 @@ class BinaryCrossEntropy(nn.Module):
         return F.binary_cross_entropy_with_logits(x, y, reduction='mean')
 
 
+class NativeScalerWithGradAccum:
+    def __init__(self):
+        """NativeScalerWithGradAccum (timm)
+        Native(pytorch) f16 scaler
+        """
+        self._scaler = GradScaler()
+
+    def __call__(self, loss, optimizer, model_param, grad_norm=None, update=True):
+        self._scaler.scale(loss).backward()
+        if update:
+            if grad_norm:
+                self._scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model_param, grad_norm)
+            self._scaler.step(optimizer)
+            self._scaler.update()
+
+
 def get_scaler_criterion(args):
     """Get Criterion(Loss) function and scaler
-    Criterion functions is divided depending on usage of mixup.
+    Criterion functions are divided depending on usage of mixup.
     - w/ mixup - you don't need to add smoothing loss, because mixup will add smoothing loss.
     - w/o mixup - you should need to add smoothing loss
     """

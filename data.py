@@ -169,6 +169,9 @@ class MixUP:
 
 class CutMix:
     def __init__(self):
+        """CUTMIX
+        Todo: add label smoothing option
+        """
         self.p = 0.5
         self.alpha = 1.0
 
