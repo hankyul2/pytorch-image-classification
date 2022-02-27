@@ -23,6 +23,11 @@ def get_args():
     parser.add_argument('--sync-bn', action='store_true', default=False, help='apply sync batchnorm')
     parser.add_argument('--ema-decay', type=float, default=0.99999, help='exponential model average decay')
 
+    # criterion
+    parser.add_argument('-c', '--criterion', type=str, default='ce', help='loss function')
+    parser.add_argument('--smoothing', type=float, default=0.1, help='label smoothing')
+    parser.add_argument('--bce-target', type=float, default=None, help='remove cutmix/mixup label below target prob')
+
     # optimizer
     parser.add_argument('--lr', type=float, default=1e-3, help='learning rate(lr)')
     parser.add_argument('--epoch', type=int, default=100, help='epoch')
@@ -32,6 +37,9 @@ def get_args():
     parser.add_argument('--nesterov', action='store_true', default=False, help='use nesterov momentum')
     parser.add_argument('--betas', type=float, nargs=2, default=[0.9, 0.999], help='adam optimizer beta parameter')
     parser.add_argument('--eps', type=float, default=1e-6, help='optimizer eps')
+
+    # gradient normalization
+    parser.add_argument('--grad-norm', type=float, default=None, help='gradient clipping threshold')
 
     # scheduler
     parser.add_argument('--scheduler', type=str, default='cosine', help='lr scheduler')
@@ -46,6 +54,7 @@ def get_args():
     parser.add_argument('-b', '--batch-size', type=int, default=256, help='batch size')
     parser.add_argument('-j', '--num-workers', type=int, default=8, help='number of workers')
     parser.add_argument('--pin-memory', action='store_true', default=False, help='pin memory in dataloader')
+    parser.add_argument('--amp', action='store_true', default=False, help='enable native amp(fp16) training')
     parser.add_argument('--channels-last', action='store_true', default=False, help='change memory format to channels last')
     parser.add_argument('--cuda', type=str, default='0,1,2,3,4,5,6,7,8', help='CUDA_VISIBLE_DEVICES options')
 

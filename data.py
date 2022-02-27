@@ -219,6 +219,7 @@ def get_data(args):
 
     collate_fn = None
 
+    args.use_mixup = args.mixup or args.cutmix
     if args.mixup:
         # collate_fn.append(MixUP())
         collate_fn = MixUP()

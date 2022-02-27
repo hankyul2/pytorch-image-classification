@@ -102,5 +102,10 @@ def get_scaler_criterion(args):
         elif args.criterion == 'bce' or args.criterion == 'binarycrossentropy':
             criterion = BinaryCrossEntropy(label_smoothing=args.smoothing, bce_target=args.bec_target)
 
-    return criterion
+    if args.amp:
+        scaler = NativeScalerWithGradAccum()
+    else:
+        scaler = None
+
+    return criterion, scaler
 
