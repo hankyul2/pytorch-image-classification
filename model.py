@@ -49,7 +49,7 @@ class ModelEmaV2(nn.Module):
 
 
 def get_model(args):
-    model = torchvision.models.__dict__[args.model_name](num_classes=args.num_classes).cuda(args.device)
+    model = torchvision.models.__dict__[args.model_name](num_classes=args.num_classes, pretrained=args.pretrained).cuda(args.device)
 
     if args.channels_last:
         model = model.to(memory_format=torch.channels_last)
@@ -57,7 +57,7 @@ def get_model(args):
     if args.sync_bn:
         model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
 
-    if args.ema_decay:
+    if args.ema:
         ema_model = ModelEmaV2(model, args.ema_decay, None)
     else:
         ema_model = None

@@ -21,7 +21,9 @@ def get_args():
     # model
     parser.add_argument('-m', '--model-name', type=str, default='resnet50', help='model name')
     parser.add_argument('--sync-bn', action='store_true', default=False, help='apply sync batchnorm')
+    parser.add_argument('--ema', action='store_true', default=False, help='apply EMA for model')
     parser.add_argument('--ema-decay', type=float, default=0.99999, help='exponential model average decay')
+    parser.add_argument('--pretrained', action='store_true', default=False, help='load pretrained weight')
 
     # criterion
     parser.add_argument('-c', '--criterion', type=str, default='ce', help='loss function')
