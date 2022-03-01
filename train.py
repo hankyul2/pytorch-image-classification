@@ -17,17 +17,19 @@ def main(args):
     if args.resume:
         resume_from_checkpoint(args.checkpoint_path, model, ema_model, optimizer, scaler, scheduler)
 
+    if args.validate_only:
+        # Todo: improve validate loop
+        validate(model, valid_criterion, valid_dataloader, args)
+        if args.ema:
+            validate(ema_model, valid_criterion, valid_dataloader, args)
+        return
+
     start_epoch = args.start_epoch if args.start_epoch else 0
     end_epoch = (start_epoch + args.end_epoch) if args.end_epoch else args.epoch
 
     if scheduler is not None and start_epoch:
         # Todo: sequential lr does not support step with epoch as positional variable
         scheduler.step(start_epoch)
-
-    if args.validate_only:
-        validate(model, valid_criterion, valid_dataloader, args)
-        if args.ema:
-            validate(ema_model, valid_criterion, valid_dataloader, args)
 
     for epoch in range(start_epoch, end_epoch):
         if args.distributed:
@@ -39,6 +41,7 @@ def main(args):
             eval_ema_metric = validate(ema_model, valid_criterion, valid_dataloader, args)
 
         # Todo: save checkpoint
+        # Todo: add logger
 
 
 if __name__ == '__main__':
