@@ -66,6 +66,7 @@ def setup(args):
         torch.random(args.seed)
 
     if args.use_deterministic:
+        # Todo: considering add args.validate_only as condition
         torch.backends.cudnn.benchmark = False
         torch.use_deterministic_algorithms(True)
     else:

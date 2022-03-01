@@ -58,6 +58,13 @@ def get_args():
     parser.add_argument('--channels-last', action='store_true', default=False, help='change memory format to channels last')
     parser.add_argument('--cuda', type=str, default='0,1,2,3,4,5,6,7,8', help='CUDA_VISIBLE_DEVICES options')
 
+    # control logic (validate & resume & start & end epoch)
+    parser.add_argument('--validate-only', action='store_true', default=False, help='if enabled, evaluate model')
+    parser.add_argument('--resume', action='store_true', default=False, help='if true, resume from checkpoint_path')
+    parser.add_argument('--checkpoint-path', type=str, default=None, help='resume checkpoint path')
+    parser.add_argument('--start-epoch', type=int, default=None, help='start of epoch(override resume epoch)')
+    parser.add_argument('--end-epoch', type=int, default=None, help='early stop epoch')
+
     # setup
     parser.add_argument('-proj', '--project-name', type=str, default='pytorch-image-classification', help='project name used for wandb logger')
     parser.add_argument('-exp', '--exp-name', type=str, default=None, help='experiment name for each run')
