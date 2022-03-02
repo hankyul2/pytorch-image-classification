@@ -1,7 +1,7 @@
 import argparse
 
 
-def get_args():
+def get_args_parser():
     parser = argparse.ArgumentParser(description='pytorch-image-classification', add_help=True, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # data
     parser.add_argument('data_dir', type=str, help='dataset dir')
@@ -68,10 +68,11 @@ def get_args():
     parser.add_argument('--end-epoch', type=int, default=None, help='early stop epoch')
 
     # setup
+    parser.add_argument('--use-wandb', action='store_true', default=False, help='track std out and log metric in wandb')
     parser.add_argument('-proj', '--project-name', type=str, default='pytorch-image-classification', help='project name used for wandb logger')
     parser.add_argument('-exp', '--exp-name', type=str, default=None, help='experiment name for each run')
     parser.add_argument('-out', '--output-dir', type=str, default='log', help='where log output is saved')
     parser.add_argument('-s', '--seed', type=int, default=None, help='fix seed')
     parser.add_argument('--use-deterministic', action='store_true', default=False, help='use deterministic algorithm (slow, but better for reproduction)')
 
-    return parser.parse_args()
+    return parser
