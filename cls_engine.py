@@ -1,5 +1,6 @@
 import torch
-import torch.distributed as dist
+
+from metrics import reduce_mean
 
 
 @torch.inference_mode()
@@ -15,8 +16,7 @@ def validate(model, criterion, valid_dataloader, args):
         loss = criterion(y_hat, y)
 
         if args.distributed:
-            dist.reduce(loss, 0, dist.ReduceOp.SUM)
-            loss = loss / args.world_size
+            loss = reduce_mean(loss, args.world_wize)
 
         if args.gpu == 0:
             loss_metric += loss.detach().item()

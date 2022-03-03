@@ -67,21 +67,17 @@ class BaseMetric:
         return self.fmt.format(**self.__dict__)
 
 
-class Accuracy(BaseMetric):
-    def __init__(self, top_k=1, *args, **kwargs):
-        super(Accuracy, self).__init__(*args, **kwargs)
-        self.top_k = top_k
-
-    def update(self, y_hat:torch.Tensor, y:torch.Tensor, n=1):
-        top_k_pred = torch.argsort(y_hat, dim=-1, descending=True)[:, :self.top_k]
-        accuracy = (top_k_pred == y.unsqueeze(-1)).float().sum(dim=-1).mean()
-        super(Accuracy, self).update(accuracy, n)
+def Accuracy(y_hat, y, top_k=(1,)):
+    prediction = torch.argsort(y_hat, dim=-1, descending=True)
+    accuracy = [(prediction[:, :k] == y.unsqueeze(-1)).float().sum(dim=-1).mean() for k in top_k]
+    return accuracy
 
 
 def all_reduce_mean(val, world_size):
     dist.all_reduce(val.detach(), dist.ReduceOp.SUM)
     val = val / world_size
     return val
+
 
 def reduce_mean(val, world_size):
     dist.reduce(val.detach(), 0, dist.ReduceOp.SUM)
