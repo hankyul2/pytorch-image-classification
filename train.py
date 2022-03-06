@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from args import get_args_parser
 from checkpoint import resume_from_checkpoint
 from cls_engine import validate, train_one_epoch
@@ -51,6 +49,6 @@ if __name__ == '__main__':
     args = args_parser.parse_args()
 
     if args.exp_name is None:
-        args.exp_name = f'{args.model_name}_{datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        args.exp_name = f'{args.model_name}'
 
     main(args)
