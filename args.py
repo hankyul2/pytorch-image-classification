@@ -11,6 +11,8 @@ def get_args_parser():
     parser.add_argument('--interpolation', type=str, default='bilinear', help='image interpolation mode')
     parser.add_argument('--mean', type=float, default=(0.5, 0.5, 0.5), nargs='+', help='image mean')
     parser.add_argument('--std', type=float, default=(0.5, 0.5, 0.5), nargs='+', help='image std')
+
+    # augmentation
     parser.add_argument('-hf', '--hflip', type=float, default=0.5, help='random horizontal flip')
     parser.add_argument('-aa', '--auto-aug', type=str, default=None, help='rand augmentation')
     parser.add_argument('--cutmix', type=float, default=0.5, help='cutmix probability')
