@@ -5,7 +5,7 @@ from torch import distributed as dist
 
 
 class Metric:
-    def __init__(self, reduce_every_n_step=50, reduce_on_compute=False, header='', fmt='{val:.2f} ({avg:.2f})'):
+    def __init__(self, reduce_every_n_step=50, reduce_on_compute=True, header='', fmt='{val:.2f} ({avg:.2f})'):
         """Base Metric Class supporting ddp setup
 
         :arg
@@ -89,7 +89,7 @@ def all_reduce_mean(val, world_size):
         val(tensor): target
         world_size(int): the number of process in each group
     """
-    dist.all_reduce(val.detach(), dist.ReduceOp.SUM)
+    dist.all_reduce(val.clone(), dist.ReduceOp.SUM)
     val = val / world_size
     return val
 
@@ -100,6 +100,6 @@ def reduce_mean(val, world_size):
         val(tensor): target
         world_size(int): the number of process in each group
     """
-    dist.reduce(val.detach(), 0, dist.ReduceOp.SUM)
+    dist.reduce(val.clone(), 0, dist.ReduceOp.SUM)
     val = val / world_size
     return val
