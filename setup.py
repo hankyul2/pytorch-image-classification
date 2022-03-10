@@ -1,3 +1,5 @@
+import glob
+from datetime import datetime
 import logging
 import os
 import random
@@ -26,6 +28,7 @@ def allow_print_to_master(is_master):
 def init_distributed_mode(args):
     os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
     os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda
+    print(f'{datetime.now().strftime("[%Y/%m/%d %Hh %Mm %Ss]")} ', end='')
 
     if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
         args.distributed = True
@@ -76,7 +79,8 @@ def log(msg, metric=False, logger=None):
 
 
 def init_logger(args):
-    # Todo: add metric writer
+    args.version_id = len(list(glob.glob(os.path.join(args.output_dir, f'{args.exp_name}_v*'))))
+    args.exp_name = f'{args.exp_name}_v{args.version_id}'
     args.log_dir = os.path.join(args.output_dir, args.exp_name)
     args.text_log_path = os.path.join(args.log_dir, 'log.txt')
     args.best_weight_path = os.path.join(args.log_dir, 'best_weight.pth')
@@ -93,6 +97,7 @@ def init_logger(args):
 
     args.log("| Project Name: %s" % args.project_name)
     args.log("| Experiment Name: %s" % args.exp_name)
+    args.log('| Experiment Data: %s' % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     args.log("| Model Name: %s" % args.model_name)
     args.log("| Log dir: %s" % args.log_dir)
 
