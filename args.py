@@ -72,6 +72,7 @@ def get_args_parser():
     # setup
     parser.add_argument('--use-wandb', action='store_true', default=False, help='track std out and log metric in wandb')
     parser.add_argument('-proj', '--project-name', type=str, default='pytorch-image-classification', help='project name used for wandb logger')
+    parser.add_argument('--who', type=str, default='Hankyul', help='enter your name')
     parser.add_argument('-exp', '--exp-name', type=str, default=None, help='experiment name for each run')
     parser.add_argument('-out', '--output-dir', type=str, default='log', help='where log output is saved')
     parser.add_argument('-p', '--print-freq', type=int, default=50, help='how often print metric in iter')

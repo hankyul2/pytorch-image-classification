@@ -28,7 +28,7 @@ def allow_print_to_master(is_master):
 def init_distributed_mode(args):
     os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
     os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda
-    print(f'{datetime.now().strftime("[%Y/%m/%d %Hh %Mm %Ss]")} ', end='')
+    print(f'{datetime.now().strftime("[%Y/%m/%d %H:%M]")} ', end='')
 
     if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
         args.distributed = True
@@ -55,7 +55,7 @@ def init_distributed_mode(args):
 def make_logger(log_file_path):
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(asctime)s %(message)s", "[%Y/%m/%d %Hh %Mm %Ss]")
+    formatter = logging.Formatter("%(asctime)s | %(message)s", "[%Y/%m/%d %H:%M]")
 
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
@@ -95,16 +95,28 @@ def init_logger(args):
 
     args.log = partial(log, logger=args.logger)
 
-    args.log("| Project Name: %s" % args.project_name)
-    args.log("| Experiment Name: %s" % args.exp_name)
-    args.log('| Experiment Data: %s' % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    args.log("| Model Name: %s" % args.model_name)
-    args.log("| Log dir: %s" % args.log_dir)
+
+def print_metadata(args):
+    args.log("-" * 20 + "INFORMATION" + "-" * 20)
+    args.log("Project Name: %s" % args.project_name)
+    args.log("Experiment Name: %s" % args.exp_name)
+    args.log('Experiment Start at: %s' % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    args.log('Experiment Start by: %s' % args.who)
+    args.log("Model Name: %s" % args.model_name)
+    args.log("Log dir: %s" % args.log_dir)
+    args.log("-" * 20 + "TERMINOLOGY" + "-" * 20)
+    args.log("Batch: Time for 1 iter in seconds")
+    args.log("Data: Time to load data in seconds")
+    args.log("F+B+O: Time for (Forward+Backward+Optimizer) in seconds")
+    args.log("Top-1: Top-1 Accuracy")
+    args.log("Top-5: Top-5 Accuracy")
+    args.log("-" * 51)
 
 
 def setup(args):
     init_distributed_mode(args)
     init_logger(args)
+    print_metadata(args)
 
     if args.seed is not None:
         numpy.random.seed(args.seed)
