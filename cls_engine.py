@@ -51,23 +51,23 @@ def validate(model, criterion, valid_dataloader, args):
         start_time = time.time()
 
     # 3. calculate metric
-    batch = batch_m.compute()
-    duration = datetime.timedelta(seconds=batch_m.sum)
-    data = data_m.compute()
+    duration = str(datetime.timedelta(seconds=batch_m.sum)).split('.')[0]
+    data = str(datetime.timedelta(seconds=data_m.sum)).split('.')[0]
+    f_b_o = str(datetime.timedelta(seconds=batch_m.sum - data_m.sum)).split('.')[0]
     top1 = top1_m.compute()
     top5 = top5_m.compute()
     loss = loss_m.compute()
 
     # 4. print metric
-    space = 15
-    num_metric = 6
+    space = 16
+    num_metric = 5
     args.log('-'*space*num_metric)
-    args.log(("{:>15}"*num_metric).format('Duration', 'Batch', 'Data', 'F+B+O', 'Top-1 Acc', 'Top-5 Acc'))
+    args.log(("{:>16}"*num_metric).format('Batch', 'Data', 'F+B+O', 'Top-1 Acc', 'Top-5 Acc'))
     args.log('-'*space*num_metric)
-    args.log(f"{str(duration).split('.')[0]:>15}{batch:15.4f}{data:>15.4f}{batch-data:>15.4f}{top1:15.4f}{top5:15.4f}")
+    args.log(f"{duration:>{space}}{data:>{space}}{f_b_o:>{space}}{top1:{space}.4f}{top5:{space}.4f}")
     args.log('-'*space*num_metric)
 
-    return batch, data, top1, top5, loss
+    return batch_m.avg, data_m.avg, top1, top5, loss
 
 
 
