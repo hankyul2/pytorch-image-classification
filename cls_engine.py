@@ -10,15 +10,13 @@ from metrics import Metric, Accuracy
 def validate(model, criterion, valid_dataloader, args):
 
     # 1. create metric
-    data_m = Metric(reduce_every_n_step=args.print_freq, header='Data:')
-    batch_m = Metric(reduce_every_n_step=args.print_freq, header='Batch:')
+    data_m = Metric(reduce_every_n_step=0, reduce_on_compute=False, header='Data:')
+    batch_m = Metric(reduce_every_n_step=0, reduce_on_compute=False, header='Batch:')
     top1_m = Metric(reduce_every_n_step=args.print_freq, header='Top-1:')
     top5_m = Metric(reduce_every_n_step=args.print_freq, header='Top-5:')
     loss_m = Metric(reduce_every_n_step=args.print_freq, header='Loss:')
 
     # 2. start validate
-    args.log("")
-    args.log("Start Validation...")
     model.eval()
     if args.channels_last:
         model = model.to(memory_format=args.channels_last)
