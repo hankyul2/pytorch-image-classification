@@ -17,3 +17,4 @@ class NativeScalerWithGradAccum:
                 torch.nn.utils.clip_grad_norm_(model_param, grad_norm)
             self._scaler.step(optimizer)
             self._scaler.update()
+            optimizer.zero_grad()
