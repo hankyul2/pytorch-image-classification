@@ -16,6 +16,12 @@ What does each variable mean?
 - cuda - control which gpu device to use
 
 ## Need to remember
+```bash
+torchrun --nproc_per_node=2 train.py imageNet --interpolation bicubic --lr 1e-3 --epoch 50 --warmup-lr 1e-6 -j 8 --pin-memory --amp --channels-last --cuda 7,8 --who hankyul --exp-target model_name
+```
+
+
+
 1. You should choose experiment_target or set experiment name manually.
 2. You should specify your name & project name
 
