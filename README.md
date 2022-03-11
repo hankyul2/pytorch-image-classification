@@ -15,6 +15,10 @@ What does each variable mean?
 - nproc_per_node - control parallelism
 - cuda - control which gpu device to use
 
+## Need to remember
+1. You should choose experiment_target or set experiment name manually.
+2. You should specify your name & project name
+
 ## Issue
 1. Validation scores are not same w/ w/o distributed mode. This is because `len(dataset) % (batch_size * ngpu) != 0`. 
 Batch sizes for each gpu's last iter are different and averaging them together results in different validation score.
