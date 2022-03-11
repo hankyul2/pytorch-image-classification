@@ -32,9 +32,9 @@ def main(args):
 
     if args.validate_only:
         # Todo: improve validate loop
-        validate(model, valid_criterion, valid_dataloader, args)
+        validate(valid_dataloader, model, valid_criterion, args)
         if args.ema:
-            validate(ema_model, valid_criterion, valid_dataloader, args)
+            validate(valid_dataloader, ema_model, valid_criterion, args)
         return
 
     start_epoch = args.start_epoch if args.start_epoch else 0
@@ -47,12 +47,13 @@ def main(args):
     # 7. train
     for epoch in range(start_epoch, end_epoch):
         if args.distributed:
-            train_dataloader.set_epoch(epoch)
+            train_dataloader.sampler.set_epoch(epoch)
 
-        train_metric = train_one_epoch(model, ema_model, ddp_model, optimizer, scheduler, criterion, scaler, args)
-        eval_metric = validate(model, valid_criterion, valid_dataloader, args)
+        train_metric = train_one_epoch(epoch, train_dataloader, ddp_model if args.distributed else model, optimizer, criterion, args,
+                                       ema_model, scheduler, scaler)
+        eval_metric = validate(valid_dataloader, model, valid_criterion, args)
         if args.ema:
-            eval_ema_metric = validate(ema_model, valid_criterion, valid_dataloader, args)
+            eval_ema_metric = validate(valid_dataloader, ema_model, valid_criterion, args)
 
         # Todo: save checkpoint
         # Todo: add logger
