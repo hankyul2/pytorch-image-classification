@@ -3,7 +3,7 @@ import time
 
 import torch
 
-from metrics import Metric, Accuracy
+from pic.utils.metrics import Metric, Accuracy
 
 
 @torch.inference_mode()
@@ -67,7 +67,7 @@ def validate(model, criterion, valid_dataloader, args):
     args.log(f"{duration:>{space}}{data:>{space}}{f_b_o:>{space}}{top1:{space}.4f}{top5:{space}.4f}")
     args.log('-'*space*num_metric)
 
-    return batch_m.avg, data_m.avg, top1, top5, loss
+    return batch_m.sum, data_m.sum, top1, top5, loss
 
 
 

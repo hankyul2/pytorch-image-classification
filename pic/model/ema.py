@@ -1,9 +1,7 @@
 from copy import deepcopy
 
 import torch
-import torch.nn as nn
-import torchvision
-from torch.nn.parallel import DistributedDataParallel
+from torch import nn as nn
 
 
 class ModelEmaV2(nn.Module):
@@ -46,25 +44,3 @@ class ModelEmaV2(nn.Module):
 
     def set(self, model):
         self._update(model, update_fn=lambda e, m: m)
-
-
-def get_model(args):
-    model = torchvision.models.__dict__[args.model_name](num_classes=args.num_classes, pretrained=args.pretrained).cuda(args.device)
-
-    if args.channels_last:
-        model = model.to(memory_format=torch.channels_last)
-
-    if args.sync_bn:
-        model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
-
-    if args.ema:
-        ema_model = ModelEmaV2(model, args.ema_decay, None)
-    else:
-        ema_model = None
-
-    if args.distributed:
-        ddp_model = DistributedDataParallel(model, device_ids=[args.gpu])
-    else:
-        ddp_model = None
-
-    return model, ema_model, ddp_model

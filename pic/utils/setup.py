@@ -1,10 +1,10 @@
 import glob
-from datetime import datetime
 import logging
 import os
 import random
-from functools import partial
 from pathlib import Path
+from functools import partial
+from datetime import datetime
 
 import numpy
 import torch
@@ -79,6 +79,9 @@ def log(msg, metric=False, logger=None):
 
 
 def init_logger(args):
+    if args.exp_name is None:
+        args.exp_name = '_'.join(str(getattr(args, target)) for target in args.exp_target)
+
     args.version_id = len(list(glob.glob(os.path.join(args.output_dir, f'{args.exp_name}_v*'))))
     args.exp_name = f'{args.exp_name}_v{args.version_id}'
     args.log_dir = os.path.join(args.output_dir, args.exp_name)
@@ -96,31 +99,9 @@ def init_logger(args):
     args.log = partial(log, logger=args.logger)
 
 
-def print_metadata(args):
-    args.log("-" * 81)
-    args.log(" " * 35 + "INFORMATION" + " " * 35)
-    args.log("-" * 81)
-    args.log(f"{'Project Name':<25} | {args.project_name}")
-    args.log(f"{'Project Administrator':<25} | {args.who}")
-    args.log(f"{'Experiment Name':<25} | {args.exp_name}")
-    args.log(f"{'Experiment Start Time':<25} | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    args.log(f"{'Experiment Model Name':<25} | {args.model_name}")
-    args.log(f"{'Experiment Log Directory':<25} | {args.log_dir}")
-    args.log("-" * 81)
-    args.log(" " * 35 + "TERMINOLOGY" + " " * 35)
-    args.log("-" * 81)
-    args.log(f"{'Batch':<25} | Time for 1 epoch in seconds")
-    args.log(f"{'Data':<25} | Time for loading data in seconds")
-    args.log(f"{'F+B+O':<25} | Time for Forward-Backward-Optimizer in seconds")
-    args.log(f"{'Top-1':<25} | Top-1 Accuracy")
-    args.log(f"{'Top-5':<25} | Top-5 Accuracy")
-    args.log("-" * 81)
-
-
 def setup(args):
     init_distributed_mode(args)
     init_logger(args)
-    print_metadata(args)
 
     if args.seed is not None:
         numpy.random.seed(args.seed)

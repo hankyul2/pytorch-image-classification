@@ -1,19 +1,32 @@
-from args import get_args_parser
-from checkpoint import resume_from_checkpoint
-from cls_engine import validate, train_one_epoch
-from data import get_data
-from model import get_model
-from optim_sched_crit_scale import get_optimizer_and_scheduler, get_scaler_criterion
-from setup import setup
+from pic.utils import setup, get_args_parser, resume_from_checkpoint, print_metadata
+from pic.data import get_dataset, get_dataloader
+from pic.model import get_model
+from pic.criterion import get_scaler_criterion
+from pic.optimizer import get_optimizer_and_scheduler
+from pic.use_case import validate, train_one_epoch
 
 
 def main(args):
+    # 0. init ddp & logger
     setup(args)
-    train_dataloader, valid_dataloader = get_data(args)
+
+    # 1. load dataset
+    train_dataset, valid_dataset = get_dataset(args)
+    train_dataloader, valid_dataloader = get_dataloader(train_dataset, valid_dataset, args)
+
+    # 2. make model
     model, ema_model, ddp_model = get_model(args)
+
+    # 3. load optimizer
     optimizer, scheduler = get_optimizer_and_scheduler(model, args)
+
+    # 4. load criterion
     criterion, valid_criterion, scaler = get_scaler_criterion(args)
 
+    # 5. print metadata
+    print_metadata(model, train_dataset, valid_dataset, args)
+
+    # 6. control logic for checkpoint & validate
     if args.resume:
         resume_from_checkpoint(args.checkpoint_path, model, ema_model, optimizer, scaler, scheduler)
 
@@ -31,6 +44,7 @@ def main(args):
         # Todo: sequential lr does not support step with epoch as positional variable
         scheduler.step(start_epoch)
 
+    # 7. train
     for epoch in range(start_epoch, end_epoch):
         if args.distributed:
             train_dataloader.set_epoch(epoch)
@@ -47,8 +61,5 @@ def main(args):
 if __name__ == '__main__':
     args_parser = get_args_parser()
     args = args_parser.parse_args()
-
-    if args.exp_name is None:
-        args.exp_name = f'{args.model_name}'
 
     main(args)
