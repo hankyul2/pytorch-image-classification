@@ -53,9 +53,10 @@ def get_args_parser():
     optimizer.add_argument('--betas', type=float, nargs=2, default=[0.9, 0.999], help='adam optimizer beta parameter')
     optimizer.add_argument('--eps', type=float, default=1e-6, help='optimizer eps')
 
-    # gradient normalization
-    grad_norm = parser.add_argument_group('grad_norm')
-    grad_norm.add_argument('--grad-norm', type=float, default=None, help='gradient clipping threshold')
+    # gradient normalization & accumulation
+    gradient = parser.add_argument_group('gradient')
+    gradient.add_argument('--grad-norm', type=float, default=None, help='gradient clipping threshold')
+    gradient.add_argument('--grad-accum', type=int, default=1, help='gradient accumulation')
 
     # scheduler
     scheduler = parser.add_argument_group('scheduler')
@@ -90,7 +91,7 @@ def get_args_parser():
     setup.add_argument('-proj', '--project-name', type=str, default='pytorch-image-classification', help='project name used for wandb logger')
     setup.add_argument('--who', type=str, default='Hankyul', help='enter your name')
     setup.add_argument('-exp', '--exp-name', type=str, default=None, help='experiment name for each run')
-    setup.add_argument('--exp-target', type=str, default=['model_name'], help='experiment target')
+    setup.add_argument('--exp-target', type=str, default=['model_name'], nargs='+', help='experiment target')
     setup.add_argument('-out', '--output-dir', type=str, default='log', help='where log output is saved')
     setup.add_argument('-p', '--print-freq', type=int, default=50, help='how often print metric in iter')
     setup.add_argument('-s', '--seed', type=int, default=None, help='fix seed')
