@@ -20,15 +20,15 @@ class ImageNetTrain:
                 policy = transforms.AutoAugmentPolicy('imagenet')
                 transform_list.append(transforms.AutoAugment(policy=policy, interpolation=interpolation))
 
-        if remode:
-            transform_list.append(transforms.RandomErasing(remode))
-
         transform_list.extend([
             transforms.RandomResizedCrop(resize, interpolation=interpolation),
             transforms.PILToTensor(),
             transforms.ConvertImageDtype(torch.float),
             transforms.Normalize(mean=mean, std=std)
         ])
+
+        if remode:
+            transform_list.append(transforms.RandomErasing(remode))
 
         self.transform_fn = transforms.Compose(transform_list)
 
