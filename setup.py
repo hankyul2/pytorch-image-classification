@@ -97,20 +97,24 @@ def init_logger(args):
 
 
 def print_metadata(args):
-    args.log("-" * 20 + "INFORMATION" + "-" * 20)
-    args.log("Project Name: %s" % args.project_name)
-    args.log("Experiment Name: %s" % args.exp_name)
-    args.log('Experiment Start at: %s' % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    args.log('Experiment Start by: %s' % args.who)
-    args.log("Model Name: %s" % args.model_name)
-    args.log("Log dir: %s" % args.log_dir)
-    args.log("-" * 20 + "TERMINOLOGY" + "-" * 20)
-    args.log("Batch: Time for 1 iter in seconds")
-    args.log("Data: Time to load data in seconds")
-    args.log("F+B+O: Time for (Forward+Backward+Optimizer) in seconds")
-    args.log("Top-1: Top-1 Accuracy")
-    args.log("Top-5: Top-5 Accuracy")
-    args.log("-" * 51)
+    args.log("-" * 81)
+    args.log(" " * 35 + "INFORMATION" + " " * 35)
+    args.log("-" * 81)
+    args.log(f"{'Project Name':<25} | {args.project_name}")
+    args.log(f"{'Project Administrator':<25} | {args.who}")
+    args.log(f"{'Experiment Name':<25} | {args.exp_name}")
+    args.log(f"{'Experiment Start Time':<25} | {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    args.log(f"{'Experiment Model Name':<25} | {args.model_name}")
+    args.log(f"{'Experiment Log Directory':<25} | {args.log_dir}")
+    args.log("-" * 81)
+    args.log(" " * 35 + "TERMINOLOGY" + " " * 35)
+    args.log("-" * 81)
+    args.log(f"{'Batch':<25} | Time for 1 epoch in seconds")
+    args.log(f"{'Data':<25} | Time for loading data in seconds")
+    args.log(f"{'F+B+O':<25} | Time for Forward-Backward-Optimizer in seconds")
+    args.log(f"{'Top-1':<25} | Top-1 Accuracy")
+    args.log(f"{'Top-5':<25} | Top-5 Accuracy")
+    args.log("-" * 81)
 
 
 def setup(args):
