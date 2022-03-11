@@ -8,7 +8,6 @@ from metrics import Metric, Accuracy
 
 @torch.inference_mode()
 def validate(model, criterion, valid_dataloader, args):
-
     # 1. create metric
     data_m = Metric(reduce_every_n_step=0, reduce_on_compute=False, header='Data:')
     batch_m = Metric(reduce_every_n_step=0, reduce_on_compute=False, header='Batch:')

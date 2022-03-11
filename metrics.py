@@ -23,10 +23,10 @@ class Metric:
             self.world_size = None
             self.reduce_every_n_step = self.reduce_on_compute = False
 
-        self.val = None
-        self.sum = None
-        self.avg = None
-        self.n = None
+        self.val = 0
+        self.sum = 0
+        self.n = 0
+        self.avg = 0
         self.header = header
         self.fmt = fmt
 
@@ -36,16 +36,10 @@ class Metric:
         elif self.reduce_every_n_step and not isinstance(val, torch.Tensor):
             raise ValueError('reduce operation is allowed for only tensor')
 
-        if self.val is None:
-            self.n = n
-            self.val = val
-            self.sum = val
-            self.avg = self.sum / self.n
-        else:
-            self.val = val
-            self.sum += val * n
-            self.n += n
-            self.avg = self.sum / self.n
+        self.val = val
+        self.sum += val * n
+        self.n += n
+        self.avg = self.sum / self.n
 
         if self.reduce_every_n_step and self.n % self.reduce_every_n_step == 0:
             self.sum = all_reduce_mean(self.sum, self.world_size)
@@ -57,12 +51,6 @@ class Metric:
             self.avg = self.sum / self.n
 
         return self.avg
-
-    def reset(self):
-        self.val = None
-        self.n = None
-        self.sum = None
-        self.avg = None
 
     def __str__(self):
         return self.header + ' ' + self.fmt.format(**self.__dict__)
