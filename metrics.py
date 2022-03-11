@@ -47,7 +47,7 @@ class Metric:
             self.n += n
             self.avg = self.sum / self.n
 
-        if self.reduce_every_n_step and n % self.reduce_every_n_step == 0:
+        if self.reduce_every_n_step and self.n % self.reduce_every_n_step == 0:
             self.sum = all_reduce_mean(self.sum, self.world_size)
             self.avg = self.sum / self.n
 
@@ -89,8 +89,20 @@ def all_reduce_mean(val, world_size):
         val(tensor): target
         world_size(int): the number of process in each group
     """
-    dist.all_reduce(val.clone(), dist.ReduceOp.SUM)
+    val = val.clone()
+    dist.all_reduce(val, dist.ReduceOp.SUM)
     val = val / world_size
+    return val
+
+
+def all_reduce_sum(val):
+    """Collect value to each gpu
+    :arg
+        val(tensor): target
+        world_size(int): the number of process in each group
+    """
+    val = val.clone()
+    dist.all_reduce(val, dist.ReduceOp.SUM)
     return val
 
 
@@ -100,6 +112,7 @@ def reduce_mean(val, world_size):
         val(tensor): target
         world_size(int): the number of process in each group
     """
-    dist.reduce(val.clone(), 0, dist.ReduceOp.SUM)
+    val = val.clone()
+    dist.reduce(val, 0, dist.ReduceOp.SUM)
     val = val / world_size
     return val
