@@ -5,7 +5,7 @@ from torch import distributed as dist
 
 
 class Metric:
-    def __init__(self, reduce_every_n_step=50, reduce_on_compute=True, header='', fmt='{val:.2f} ({avg:.2f})'):
+    def __init__(self, reduce_every_n_step=50, reduce_on_compute=True, header='', fmt='{val:.4f} ({avg:.4f})'):
         """Base Metric Class supporting ddp setup
 
         :arg
