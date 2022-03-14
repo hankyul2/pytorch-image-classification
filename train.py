@@ -1,6 +1,6 @@
 from pic.utils import setup, get_args_parser, resume_from_checkpoint, print_metadata
 from pic.data import get_dataset, get_dataloader
-from pic.model import get_model
+from pic.model import get_model, get_ema_ddp_model
 from pic.criterion import get_scaler_criterion
 from pic.optimizer import get_optimizer_and_scheduler
 from pic.use_case import validate, train_one_epoch
@@ -15,7 +15,8 @@ def main(args):
     train_dataloader, valid_dataloader = get_dataloader(train_dataset, valid_dataset, args)
 
     # 2. make model
-    model, ema_model, ddp_model = get_model(args)
+    model = get_model(args)
+    model, ema_model, ddp_model = get_ema_ddp_model(model, args)
 
     # 3. load optimizer
     optimizer, scheduler = get_optimizer_and_scheduler(model, args)
@@ -28,21 +29,22 @@ def main(args):
 
     # 6. control logic for checkpoint & validate
     if args.resume:
-        resume_from_checkpoint(args.checkpoint_path, model, ema_model, optimizer, scaler, scheduler)
+        start_epoch = resume_from_checkpoint(args.checkpoint_path, model, ema_model, optimizer, scaler, scheduler)
+    else:
+        start_epoch = 0
 
-    if args.validate_only:
-        # Todo: improve validate loop
-        validate(valid_dataloader, model, valid_criterion, args)
-        if args.ema:
-            validate(valid_dataloader, ema_model, valid_criterion, args)
-        return
-
-    start_epoch = args.start_epoch if args.start_epoch else 0
+    start_epoch = args.start_epoch if args.start_epoch else start_epoch
     end_epoch = (start_epoch + args.end_epoch) if args.end_epoch else args.epoch
 
     if scheduler is not None and start_epoch:
         # Todo: sequential lr does not support step with epoch as positional variable
         scheduler.step(start_epoch)
+
+    if args.validate_only:
+        validate(valid_dataloader, model, valid_criterion, args, 'org')
+        if args.ema:
+            validate(valid_dataloader, ema_model, valid_criterion, args, 'ema')
+        return
 
     # 7. train
     for epoch in range(start_epoch, end_epoch):
@@ -51,9 +53,9 @@ def main(args):
 
         train_metric = train_one_epoch(epoch, train_dataloader, ddp_model if args.distributed else model, optimizer, criterion, args,
                                        ema_model, scheduler, scaler)
-        eval_metric = validate(valid_dataloader, model, valid_criterion, args)
+        eval_metric = validate(valid_dataloader, model, valid_criterion, args, 'org')
         if args.ema:
-            eval_ema_metric = validate(valid_dataloader, ema_model, valid_criterion, args)
+            eval_ema_metric = validate(valid_dataloader, ema_model, valid_criterion, args, 'ema')
 
         # Todo: save checkpoint
         # Todo: add logger

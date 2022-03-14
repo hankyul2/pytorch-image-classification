@@ -24,8 +24,7 @@ torchrun --nproc_per_node=2 train.py imageNet --interpolation bicubic --lr 1e-3 
 
 1. You should choose experiment_target or set experiment name manually.
 2. You should specify your name & project name
+3. resize operation in test time is done like this: `(H, W) -> resize -> (test_size/crop_ptr, test_size/crop_ptr) -> center_crop -> (test_size, test_size)`. It makes me confused at first. But you can set test_image size directly.
 
 ## Issue
-1. Validation scores are not same w/ w/o distributed mode. This is because `len(dataset) % (batch_size * ngpu) != 0`. 
-Batch sizes for each gpu's last iter are different and averaging them together results in different validation score.
-Difference is about `0.04%`.
+1. Validation scores are not same w/ w/o distributed mode. This is because `len(dataset) % (batch_size * ngpu) != 0`. Batch sizes for each gpu's last iter are different and averaging them together results in different validation score. Difference is about `0.04%`.

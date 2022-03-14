@@ -39,5 +39,7 @@ def resume_from_checkpoint(checkpoint_path, model=None, ema_model=None, optimize
             else:
                 raise ValueError(f'we can not find {key_list} in given checkpoint(dir={checkpoint_path})')
 
+        return checkpoint.get('epoch', None)
+
     else:
         raise ValueError(f'no file exist in given checkpoint_path argument(dir={checkpoint_path}')
