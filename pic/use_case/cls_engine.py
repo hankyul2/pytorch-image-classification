@@ -24,13 +24,14 @@ def validate(valid_dataloader, model, criterion, args):
     start_time = time.time()
 
     for batch_idx, (x, y) in enumerate(valid_dataloader):
+        batch_size = x.size(0)
         x = x.to(args.device)
         y = y.to(args.device)
 
         if args.channels_last:
             x = x.to(memory_format=torch.channels_last)
 
-        data_m.update(time.time() - start_time)
+        data_m.update(time.time() - start_time, batch_size)
 
         with torch.cuda.amp.autocast(args.amp):
             y_hat = model(x)
@@ -38,15 +39,15 @@ def validate(valid_dataloader, model, criterion, args):
 
         top1, top5 = Accuracy(y_hat, y, top_k=(1,5,))
 
-        top1_m.update(top1)
-        top5_m.update(top5)
-        loss_m.update(loss)
+        top1_m.update(top1, batch_size)
+        top5_m.update(top5, batch_size)
+        loss_m.update(loss, batch_size)
 
         if batch_idx and args.print_freq and batch_idx % args.print_freq == 0:
             num_digits = len(str(total_iter))
             args.log(f"VALIDATION: [{batch_idx:>{num_digits}}/{total_iter}] {batch_m} {data_m} {loss_m} {top1_m} {top5_m}")
 
-        batch_m.update(time.time() - start_time)
+        batch_m.update(time.time() - start_time, batch_size)
         start_time = time.time()
 
     # 3. calculate metric
@@ -87,13 +88,14 @@ def train_one_epoch(epoch, train_dataloader, model, optimizer, criterion, args, 
     start_time = time.time()
 
     for batch_idx, (x, y) in enumerate(train_dataloader):
+        batch_size = x.size(0)
         x = x.to(args.device)
         y = y.to(args.device)
 
         if args.channels_last:
             x = x.to(memory_format=torch.channels_last)
 
-        data_m.update(time.time() - start_time)
+        data_m.update(time.time() - start_time, batch_size)
 
         with torch.cuda.amp.autocast(args.amp):
             y_hat = model(x)
@@ -113,15 +115,15 @@ def train_one_epoch(epoch, train_dataloader, model, optimizer, criterion, args, 
 
         top1, top5 = Accuracy(y_hat, y, top_k=(1,5,))
 
-        top1_m.update(top1)
-        top5_m.update(top5)
-        loss_m.update(loss)
+        top1_m.update(top1, batch_size)
+        top5_m.update(top5, batch_size)
+        loss_m.update(loss, batch_size)
 
         if batch_idx and args.print_freq and batch_idx % args.print_freq == 0:
             num_digits = len(str(total_iter))
             args.log(f"TRAIN({epoch:03}): [{batch_idx:>{num_digits}}/{total_iter}] {batch_m} {data_m} {loss_m} {top1_m} {top5_m}")
 
-        batch_m.update(time.time() - start_time)
+        batch_m.update(time.time() - start_time, batch_size)
         start_time = time.time()
 
     # 3. calculate metric
