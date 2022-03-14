@@ -9,6 +9,9 @@ from pic.model import ModelEmaV2
 def get_model(args):
     model = torchvision.models.__dict__[args.model_name](num_classes=args.num_classes, pretrained=args.pretrained).cuda(args.device)
 
+    return model
+
+def get_ema_ddp_model(model, args):
     if args.channels_last:
         model = model.to(memory_format=torch.channels_last)
 
@@ -26,3 +29,4 @@ def get_model(args):
         ddp_model = None
 
     return model, ema_model, ddp_model
+
