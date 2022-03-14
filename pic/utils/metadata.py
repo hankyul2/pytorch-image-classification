@@ -1,5 +1,11 @@
 from datetime import datetime
 
+try:
+    from deepspeed.profiling.flops_profiler import get_model_profile
+    deepspeed = True
+except:
+    deepspeed = False
+
 
 def print_metadata(model, train_dataset, test_dataset, args):
     title = 'INFORMATION'
@@ -14,15 +20,21 @@ def print_metadata(model, train_dataset, test_dataset, args):
 
     title = 'EXPERIMENT SETUP'
     table = [(target, str(getattr(args, target))) for target in [
-        'train_resize', 'test_resize', 'crop_ptr', 'interpolation', 'mean', 'std',
+        'train_resize', 'test_size', 'crop_ptr', 'test_resize_mode', 'interpolation', 'mean', 'std',
         'hflip', 'auto_aug', 'cutmix', 'mixup', 'remode', 'aug_repeat',
         'model_name', 'ema', 'ema_decay', 'criterion', 'smoothing',
         'lr', 'epoch', 'optimizer', 'momentum', 'weight_decay', 'scheduler', 'warmup_epoch', 'batch_size'
     ]]
     print_tabular(title, table, args)
 
+    if deepspeed and args.print_flops:
+        flops = get_model_profile(model, input_res=(1, 3, *args.test_size), print_profile=False, detailed=False)[0]
+    else:
+        flops = 'install deepspeed & enable print-flops'
+
     title = 'DATA & MODEL'
     table = [('Model Parameters(M)', count_parameters(model)),
+             (f'Model FLOPs(3,{args.test_size[0]},{args.test_size[1]})', flops),
              ('Number of Train Examples', len(train_dataset)),
              ('Number of Valid Examples', len(test_dataset)),
              ('Number of Class', args.num_classes),]

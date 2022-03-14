@@ -8,7 +8,7 @@ from pic.data import MixUP, CutMix, RepeatAugSampler, ImageNetTrain, ImageNetVal
 
 def get_dataset(args):
     train_dataset = ImageFolder(os.path.join(args.data_dir, 'train'), ImageNetTrain(args.train_resize, args.hflip, args.auto_aug, args.remode, args.interpolation, args.mean, args.std))
-    val_dataset = ImageFolder(os.path.join(args.data_dir, 'val'), ImageNetVal(args.test_resize, args.test_resize_mode, args.crop_ptr, args.interpolation, args.mean, args.std))
+    val_dataset = ImageFolder(os.path.join(args.data_dir, 'val'), ImageNetVal(args.test_size, args.test_resize_mode, args.crop_ptr, args.interpolation, args.mean, args.std))
     args.num_classes = len(train_dataset.classes)
 
     return train_dataset, val_dataset

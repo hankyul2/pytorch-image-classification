@@ -15,7 +15,7 @@ def get_args_parser():
 
     # test input
     test_input = parser.add_argument_group('test_input')
-    test_input.add_argument('--test-resize', type=int, default=(256, 256), nargs='+', help='test image size')
+    test_input.add_argument('--test-size', type=int, default=(224, 224), nargs='+', help='test image size')
     test_input.add_argument('--test-resize-mode', type=str, default='resize_shorter', choices=['resize_shorter', 'resize'], help='test resize mode')
     test_input.add_argument('--crop-ptr', type=float, default=0.875, help='test image crop percent')
 
@@ -94,6 +94,7 @@ def get_args_parser():
     setup.add_argument('--exp-target', type=str, default=['model_name'], nargs='+', help='experiment target')
     setup.add_argument('-out', '--output-dir', type=str, default='log', help='where log output is saved')
     setup.add_argument('-p', '--print-freq', type=int, default=50, help='how often print metric in iter')
+    setup.add_argument('--print-flops', action='store_true', default=False, help='print flops in model information using deepspeed library')
     setup.add_argument('-s', '--seed', type=int, default=None, help='fix seed')
     setup.add_argument('--use-deterministic', action='store_true', default=False, help='use deterministic algorithm (slow, but better for reproduction)')
 

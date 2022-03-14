@@ -37,19 +37,20 @@ class ImageNetTrain:
 
 
 class ImageNetVal:
-    def __init__(self, test_resize, resize_mode, crop_ptr, interpolation, mean, std):
+    def __init__(self, test_size, resize_mode, crop_ptr, interpolation, mean, std):
         interpolation = transforms.functional.InterpolationMode(interpolation)
 
-        if not isinstance(test_resize, (tuple, list)):
-            test_resize = (test_resize, test_resize)
+        if not isinstance(test_size, (tuple, list)):
+            test_size = (test_size, test_size)
 
-        crop_size = (int(test_resize[0] * crop_ptr), int(test_resize[1] * crop_ptr))
+        test_size = (int(test_size[0] / crop_ptr), int(test_size[1] / crop_ptr))
+        crop_size = (int(test_size[0] * crop_ptr), int(test_size[1] * crop_ptr))
 
         if resize_mode == 'resize_shorter':
-            test_resize = test_resize[0]
+            test_size = test_size[0]
 
         transform_list = [
-            transforms.Resize(test_resize, interpolation=interpolation),
+            transforms.Resize(test_size, interpolation=interpolation),
             transforms.CenterCrop(crop_size),
             transforms.PILToTensor(),
             transforms.ConvertImageDtype(torch.float),
