@@ -1,8 +1,47 @@
 import math
 import random
+import numpy as np
 
 import torch
 from torch.nn import functional as F
+
+
+def one_hot_label_smoothing(y, nclass, smooth, confidence, device):
+    return torch.full((y.size(0), nclass), smooth, device=device).scatter_(1, y.unsqueeze(1), confidence)
+
+
+def mix_target(y1, y2, ratio, nclass, label_smoothing=0.0, device='cuda'):
+    smooth = label_smoothing / nclass
+    confidence = 1 - label_smoothing + smooth
+    y1 = one_hot_label_smoothing(y1, nclass, smooth, confidence, device=device)
+    y2 = one_hot_label_smoothing(y2, nclass, smooth, confidence, device=device)
+    return y1 * ratio + y2 * (1 - ratio)
+
+
+def get_cutmix_bounding_box_rectangle(img_shape, min_max_ratio, size=None):
+    H, W = img_shape[:2]
+    min_ratio, max_ratio = min_max_ratio
+    bb_h = np.random.randint(int(min_ratio * H), int(max_ratio * H), size=size)
+    bb_w = np.random.randint(int(min_ratio * W), int(max_ratio * W), size=size)
+    start_h = np.random.randint(0, H - bb_h, size=size)
+    start_w = np.random.randint(0, W - bb_w, size=size)
+    return start_w, start_w + bb_w, start_h, start_h + bb_h
+
+
+def get_cutmix_bounding_box(img_shape, ratio):
+    # Todo: improve me
+    """get bounding box
+
+    control bounding box shape (rectangle, square)
+    control bounding box clip (clip, not clip)
+    """
+    if not isinstance(ratio, (list, tuple)):
+        ratio = (0, ratio)
+
+    x_s, x_e, y_s, y_e = get_cutmix_bounding_box_rectangle(img_shape, ratio)
+    ratio = (x_e - x_s) * (y_e - y_s) / (img_shape[0] * img_shape[1])
+
+    return (x_s, x_e, y_s, y_e), ratio
 
 
 class MixUP:
