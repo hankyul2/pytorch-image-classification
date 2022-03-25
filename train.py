@@ -34,7 +34,7 @@ def main(args):
         start_epoch = 0
 
     start_epoch = args.start_epoch if args.start_epoch else start_epoch
-    end_epoch = (start_epoch + args.end_epoch) if args.end_epoch else args.epoch
+    end_epoch = args.end_epoch if args.end_epoch else args.epoch
 
     if scheduler is not None and start_epoch:
         # Todo: sequential lr does not support step with epoch as positional variable
