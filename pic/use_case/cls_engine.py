@@ -137,7 +137,7 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, args, ema_mod
     args.log('-'*space*num_metric)
     args.log(("{:>16}"*num_metric).format('Stage', 'Batch', 'Data', 'F+B+O', 'Loss'))
     args.log('-'*space*num_metric)
-    args.log(f"{'TRAIN('+str(epoch)+')':>{space}}{duration:>{space}}{data:>{space}}{f_b_o:>{space}}{loss:>{space}}")
+    args.log(f"{'TRAIN('+str(epoch)+')':>{space}}{duration:>{space}}{data:>{space}}{f_b_o:>{space}}{loss:{space}.4f}")
     args.log('-'*space*num_metric)
 
     return loss

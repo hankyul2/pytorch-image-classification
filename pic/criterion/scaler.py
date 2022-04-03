@@ -20,3 +20,9 @@ class NativeScalerWithGradAccum:
             optimizer.zero_grad()
             if scheduler:
                 scheduler.step()
+
+    def state_dict(self):
+        return self._scaler.state_dict()
+
+    def load_state_dict(self, state_dict):
+        self._scaler.load_state_dict(state_dict)
