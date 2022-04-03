@@ -2,7 +2,7 @@ import pytest
 import torch
 from PIL import Image
 
-from pic.data.transforms import ImageNetTrain, ImageNetVal
+from pic.data.transforms import TrainTransform, ValTransform
 from pic.data.mix import MixUP, CutMix, mix_target, get_cutmix_bounding_box
 
 
@@ -19,14 +19,14 @@ def twice():
     img.close()
 
 def test_image_net_train(iu):
-    transform_fn = ImageNetTrain((224, 224), 0.5, 'ra', 0.2, 'bilinear',(0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    transform_fn = TrainTransform((224, 224), 0.5, 'ra', 0.2, 'bilinear', (0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     x = transform_fn(iu)
     x_numpy = x.detach().permute(1, 2, 0).numpy()
     assert list(x.shape) == [3, 224, 224]
 
 def test_image_net_val(twice):
     img = Image.new(mode='RGB', size=(256, 256))
-    transform_fn = ImageNetVal((224, 224), 0.95, 'bilinear', (0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    transform_fn = ValTransform((224, 224), 0.95, 'bilinear', (0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     x = transform_fn(img)
     assert list(x.shape) == [3, 224, 224]
 
@@ -49,7 +49,7 @@ def test_get_cutmix_boudning_box():
     assert 0 <= y_e <= 32
 
 def test_mixup(iu, twice):
-    transform_fn = ImageNetTrain((224, 224), 0.5, 'ra', 0.2, 'bilinear',(0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    transform_fn = TrainTransform((224, 224), 0.5, 'ra', 0.2, 'bilinear', (0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     x1 = transform_fn(iu)
     x2 = transform_fn(twice)
     assert list(x1.shape) == [3, 224, 224]
@@ -65,7 +65,7 @@ def test_mixup(iu, twice):
 
 
 def test_cutmix(iu, twice):
-    transform_fn = ImageNetTrain((224, 224), 0.5, 'ra', 0.2, 'bilinear',(0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    transform_fn = TrainTransform((224, 224), 0.5, 'ra', 0.2, 'bilinear', (0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     x1 = transform_fn(iu)
     x2 = transform_fn(twice)
     assert list(x1.shape) == [3, 224, 224]

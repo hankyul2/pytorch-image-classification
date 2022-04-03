@@ -1,4 +1,4 @@
-from pic.utils import setup, get_args_parser, resume_from_checkpoint, print_metadata
+from pic.utils import setup, get_args_parser, save_checkpoint, resume_from_checkpoint, print_metadata
 from pic.data import get_dataset, get_dataloader
 from pic.model import get_model, get_ema_ddp_model
 from pic.criterion import get_scaler_criterion
@@ -47,18 +47,27 @@ def main(args):
         return
 
     # 7. train
+    best_epoch = 0
+    best_acc = 0
+
     for epoch in range(start_epoch, end_epoch):
         if args.distributed:
             train_dataloader.sampler.set_epoch(epoch)
 
-        train_metric = train_one_epoch(epoch, train_dataloader, ddp_model if args.distributed else model, optimizer, criterion, args,
-                                       ema_model, scheduler, scaler)
-        eval_metric = validate(valid_dataloader, model, valid_criterion, args, 'org')
+        train_loss = train_one_epoch(train_dataloader, ddp_model if args.distributed else model, optimizer, criterion, args, ema_model, scheduler, scaler, epoch)
+        val_loss, top1, top5 = validate(valid_dataloader, ddp_model if args.distributed else model, valid_criterion, args, 'org')
         if args.ema:
-            eval_ema_metric = validate(valid_dataloader, ema_model, valid_criterion, args, 'ema')
+            eval_ema_metric = validate(valid_dataloader, ema_model.module, valid_criterion, args, 'ema')
 
-        # Todo: save checkpoint
-        # Todo: add logger
+        if args.use_wandb:
+            args.log({'train_loss':train_loss, 'val_loss':val_loss, 'top1':top1, 'top5':top5}, metric=True)
+
+        if best_acc < top1:
+            best_acc = top1
+            best_epoch = epoch
+
+        save_checkpoint(args.log_dir, model, ema_model, optimizer,
+                        scaler, scheduler, is_best=best_epoch == epoch)
 
 
 if __name__ == '__main__':

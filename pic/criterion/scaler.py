@@ -9,7 +9,7 @@ class NativeScalerWithGradAccum:
         """
         self._scaler = GradScaler()
 
-    def __call__(self, loss, optimizer, model_param, grad_norm=None, update=True):
+    def __call__(self, loss, optimizer, model_param, scheduler=None, grad_norm=None, update=True):
         self._scaler.scale(loss).backward()
         if update:
             if grad_norm:
@@ -18,3 +18,5 @@ class NativeScalerWithGradAccum:
             self._scaler.step(optimizer)
             self._scaler.update()
             optimizer.zero_grad()
+            if scheduler:
+                scheduler.step()

@@ -67,11 +67,10 @@ def validate(valid_dataloader, model, criterion, args, mode='org'):
     args.log(f"{'VALID('+mode+')':>{space}}{duration:>{space}}{data:>{space}}{f_b_o:>{space}}{top1:{space}.4f}{top5:{space}.4f}")
     args.log('-'*space*num_metric)
 
-    return batch_m.sum, data_m.sum, top1, top5, loss
+    return loss, top1, top5
 
 
-
-def train_one_epoch(epoch, train_dataloader, model, optimizer, criterion, args, ema_model=None, scheduler=None, scaler=None,):
+def train_one_epoch(train_dataloader, model, optimizer, criterion, args, ema_model=None, scheduler=None, scaler=None, epoch=None):
     # 1. create metric
     data_m = Metric(reduce_every_n_step=0, reduce_on_compute=False, header='Data:')
     batch_m = Metric(reduce_every_n_step=0, reduce_on_compute=False, header='Batch:')
@@ -103,19 +102,25 @@ def train_one_epoch(epoch, train_dataloader, model, optimizer, criterion, args, 
             loss = reduce_mean(loss, args.world_size)
 
         if args.amp:
-            scaler(loss, optimizer, model.parameters(), args.grad_norm, batch_idx % args.grad_accum == 0)
+            scaler(loss, optimizer, model.parameters(), scheduler, args.grad_norm, batch_idx % args.grad_accum == 0)
         else:
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_norm)
+            if args.grad_norm:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_norm)
             if batch_idx % args.grad_accum == 0:
                 optimizer.step()
                 optimizer.zero_grad()
+                if scheduler:
+                    scheduler.step()
 
         loss_m.update(loss, batch_size)
 
         if batch_idx and args.print_freq and batch_idx % args.print_freq == 0:
             num_digits = len(str(total_iter))
             args.log(f"TRAIN({epoch:03}): [{batch_idx:>{num_digits}}/{total_iter}] {batch_m} {data_m} {loss_m}")
+
+        if batch_idx and ema_model and batch_idx % args.ema_update_step == 0:
+            ema_model.update(model)
 
         batch_m.update(time.time() - start_time)
         start_time = time.time()
@@ -128,11 +133,11 @@ def train_one_epoch(epoch, train_dataloader, model, optimizer, criterion, args, 
 
     # 4. print metric
     space = 16
-    num_metric = 4
+    num_metric = 5
     args.log('-'*space*num_metric)
     args.log(("{:>16}"*num_metric).format('Stage', 'Batch', 'Data', 'F+B+O', 'Loss'))
     args.log('-'*space*num_metric)
-    args.log(f"{'TRAIN('+epoch+')':>{space}}{duration:>{space}}{data:>{space}}{f_b_o:>{space}}{loss:>{space}}")
+    args.log(f"{'TRAIN('+str(epoch)+')':>{space}}{duration:>{space}}{data:>{space}}{f_b_o:>{space}}{loss:>{space}}")
     args.log('-'*space*num_metric)
 
-    return batch_m.sum, data_m.sum, loss
+    return loss

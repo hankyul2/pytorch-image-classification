@@ -20,8 +20,8 @@ def print_metadata(model, train_dataset, test_dataset, args):
 
     title = 'EXPERIMENT SETUP'
     table = [(target, str(getattr(args, target))) for target in [
-        'train_resize', 'test_size', 'crop_ptr', 'test_resize_mode', 'interpolation', 'mean', 'std',
-        'hflip', 'auto_aug', 'cutmix', 'mixup', 'remode', 'aug_repeat',
+        'train_size', 'train_resize_mode', 'random_crop_pad', 'random_crop_scale', 'random_crop_ratio', 'test_size', 'test_resize_mode', 'center_crop_ptr',
+        'interpolation', 'mean', 'std', 'hflip', 'auto_aug', 'cutmix', 'mixup', 'remode', 'aug_repeat',
         'model_name', 'ema', 'ema_decay', 'criterion', 'smoothing',
         'lr', 'epoch', 'optimizer', 'momentum', 'weight_decay', 'scheduler', 'warmup_epoch', 'batch_size'
     ]]

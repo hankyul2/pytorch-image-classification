@@ -43,3 +43,19 @@ def resume_from_checkpoint(checkpoint_path, model=None, ema_model=None, optimize
 
     else:
         raise ValueError(f'no file exist in given checkpoint_path argument(dir={checkpoint_path}')
+
+
+def save_checkpoint(save_dir, model, ema_model, optimizer, scaler, scheduler, epoch, is_best=False):
+    pairs = [('state_dict',model), ('state_dict_ema', ema_model),
+            ('optimizer', optimizer), ('scaler', scaler), ('scheduler', scheduler)]
+    checkpoint_dict = {k:v.state_dict() for k, v in pairs if v}
+    checkpoint_dict['epoch'] = epoch
+
+    torch.save(checkpoint_dict, os.path.join(save_dir, f'checkpoint_{epoch}.pth'))
+    torch.save(checkpoint_dict, os.path.join(save_dir, f'checkpoint_last.pth'))
+    if is_best:
+        torch.save(checkpoint_dict, os.path.join(save_dir, f'checkpoint_best.pth'))
+
+
+
+

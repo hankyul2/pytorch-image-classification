@@ -1,3 +1,4 @@
+import timm
 import torch
 import torch.nn as nn
 import torchvision
@@ -7,7 +8,12 @@ from pic.model import ModelEmaV2
 
 
 def get_model(args):
-    model = torchvision.models.__dict__[args.model_name](num_classes=args.num_classes, pretrained=args.pretrained).cuda(args.device)
+    if args.model_type == 'torchvision':
+        model = torchvision.models.__dict__[args.model_name](num_classes=args.num_classes, pretrained=args.pretrained).cuda(args.device)
+    elif args.model_type == 'timm':
+        model = timm.create_model(args.model_name, in_chans=args.in_channels, pretrained=args.pretrained).cuda(args.device)
+    else:
+        raise Exception(f"{args.model_type} is not supported yet")
 
     return model
 

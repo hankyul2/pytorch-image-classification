@@ -1,5 +1,5 @@
 from torch.optim import SGD, AdamW, RMSprop
-from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, ExponentialLR, LambdaLR, SequentialLR
+from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, ExponentialLR, LambdaLR, SequentialLR, OneCycleLR
 
 
 def get_optimizer_and_scheduler(model, args):
@@ -9,6 +9,8 @@ def get_optimizer_and_scheduler(model, args):
         args: argparse instance containing optimizer and scheduler hyperparameter
     """
     parameter = model.parameters()
+    total_iter = args.epoch * args.iter_per_epoch
+    warmup_iter = args.warmup_epoch * args.iter_per_epoch
 
     if args.optimizer == 'sgd':
         optimizer = SGD(parameter, args.lr, args.momentum, weight_decay=args.weight_decay, nesterov=args.nesterov)
@@ -20,22 +22,24 @@ def get_optimizer_and_scheduler(model, args):
         NotImplementedError(f"{args.optimizer} is not supported yet")
 
     if args.scheduler == 'cosine':
-        main_scheduler = CosineAnnealingLR(optimizer, args.epoch, args.min_lr)
+        main_scheduler = CosineAnnealingLR(optimizer, total_iter-warmup_iter, args.min_lr)
     elif args.scheduler == 'step':
-        main_scheduler = StepLR(optimizer, args.step_size, gamma=args.decay_rate)
+        main_scheduler = StepLR(optimizer, total_iter-warmup_iter, gamma=args.decay_rate)
     elif args.scheduler =='explr':
         main_scheduler = ExponentialLR(optimizer, gamma=args.decay_rate)
+    elif args.scheduler == 'onecyclelr':
+        main_scheduler = OneCycleLR(optimizer, args.lr, total_iter)
     else:
         NotImplementedError(f"{args.scheduler} is not supported yet")
 
-    if args.warmup_epoch:
+    if args.warmup_epoch and args.scheduler != 'onecyclelr':
         if args.warmup_scheduler == 'linear':
-            lr_lambda = lambda e: (e * (args.lr - args.warmup_lr) / args.warmup_epoch + args.warmup_lr) / args.lr
+            lr_lambda = lambda e: (e * (args.lr - args.warmup_lr) / warmup_iter + args.warmup_lr) / args.lr
             warmup_scheduler = LambdaLR(optimizer, lr_lambda=lr_lambda)
         else:
             NotImplementedError(f"{args.warmup_scheduler} is not supported yet")
 
-        scheduler = SequentialLR(optimizer, [warmup_scheduler, main_scheduler], [args.warmup_epoch])
+        scheduler = SequentialLR(optimizer, [warmup_scheduler, main_scheduler], [warmup_iter])
     else:
         scheduler = main_scheduler
 

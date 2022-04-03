@@ -1,17 +1,6 @@
-import os
-
 from torch.utils.data import DistributedSampler, RandomSampler, SequentialSampler, DataLoader
-from torchvision.datasets import ImageFolder
 
-from pic.data import MixUP, CutMix, RepeatAugSampler, ImageNetTrain, ImageNetVal
-
-
-def get_dataset(args):
-    train_dataset = ImageFolder(os.path.join(args.data_dir, 'train'), ImageNetTrain(args.train_resize, args.hflip, args.auto_aug, args.remode, args.interpolation, args.mean, args.std))
-    val_dataset = ImageFolder(os.path.join(args.data_dir, 'val'), ImageNetVal(args.test_size, args.test_resize_mode, args.crop_ptr, args.interpolation, args.mean, args.std))
-    args.num_classes = len(train_dataset.classes)
-
-    return train_dataset, val_dataset
+from pic.data import MixUP, CutMix, RepeatAugSampler
 
 
 def get_dataloader(train_dataset, val_dataset, args):
@@ -43,5 +32,7 @@ def get_dataloader(train_dataset, val_dataset, args):
 
     val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, sampler=val_sampler,
                                   num_workers=args.num_workers, collate_fn=None, pin_memory=False)
+
+    args.iter_per_epoch = len(train_dataloader)
 
     return train_dataloader, val_dataloader

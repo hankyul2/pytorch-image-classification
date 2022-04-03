@@ -1,9 +1,11 @@
+from math import floor
+
 import torch
 from torchvision import transforms
 
 
-class ImageNetTrain:
-    def __init__(self, resize, hflip, auto_aug, remode, interpolation, mean, std):
+class TrainTransform:
+    def __init__(self, resize, resize_mode, pad, scale, ratio, hflip, auto_aug, remode, interpolation, mean, std):
         interpolation = transforms.functional.InterpolationMode(interpolation)
 
         transform_list = []
@@ -20,10 +22,16 @@ class ImageNetTrain:
                 policy = transforms.AutoAugmentPolicy('imagenet')
                 transform_list.append(transforms.AutoAugment(policy=policy, interpolation=interpolation))
 
+        if resize_mode == 'RandomResizedCrop':
+            transform_list.append(transforms.RandomResizedCrop(resize, scale=scale, ratio=ratio, interpolation=interpolation))
+        elif resize_mode == 'ResizeRandomCrop':
+            transform_list.extend([transforms.Resize(resize, interpolation=interpolation),
+                                   transforms.RandomCrop(resize, padding=pad)])
+        else:
+            assert f"{resize_mode} should be RandomResizedCrop and ResizeRandomCrop"
+
         transform_list.extend([
-            transforms.RandomResizedCrop(resize, interpolation=interpolation),
-            transforms.PILToTensor(),
-            transforms.ConvertImageDtype(torch.float),
+            transforms.ToTensor(),
             transforms.Normalize(mean=mean, std=std)
         ])
 
@@ -36,24 +44,22 @@ class ImageNetTrain:
         return self.transform_fn(x)
 
 
-class ImageNetVal:
-    def __init__(self, test_size, resize_mode, crop_ptr, interpolation, mean, std):
+class ValTransform:
+    def __init__(self, size, resize_mode, crop_ptr, interpolation, mean, std):
         interpolation = transforms.functional.InterpolationMode(interpolation)
 
-        if not isinstance(test_size, (tuple, list)):
-            test_size = (test_size, test_size)
+        if not isinstance(size, (tuple, list)):
+            size = (size, size)
 
-        test_size = (int(test_size[0] / crop_ptr), int(test_size[1] / crop_ptr))
-        crop_size = (int(test_size[0] * crop_ptr), int(test_size[1] * crop_ptr))
+        resize = (int(floor(size[0] / crop_ptr)), int(floor(size[1] / crop_ptr)))
 
         if resize_mode == 'resize_shorter':
-            test_size = test_size[0]
+            resize = resize[0]
 
         transform_list = [
-            transforms.Resize(test_size, interpolation=interpolation),
-            transforms.CenterCrop(crop_size),
-            transforms.PILToTensor(),
-            transforms.ConvertImageDtype(torch.float),
+            transforms.Resize(resize, interpolation=interpolation),
+            transforms.CenterCrop(size),
+            transforms.ToTensor(),
             transforms.Normalize(mean, std)
         ]
 

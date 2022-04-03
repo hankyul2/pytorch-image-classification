@@ -5,10 +5,17 @@ def get_args_parser():
     parser = argparse.ArgumentParser(description='pytorch-image-classification', add_help=True, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # data
     parser.add_argument('data_dir', type=str, help='dataset dir')
+    parser.add_argument('--dataset_type', type=str, default='ImageFolder', choices=['ImageFolder', 'CIFAR10', 'CIFAR100', 'FashionMNIST'], help='dataset type')
+    parser.add_argument('--train-split', type=str, default='train', help='train split folder name for image folder dataset')
+    parser.add_argument('--val-split', type=str, default='val', help='val split folder name for image folder dataset')
 
     # train input
     train_input = parser.add_argument_group('train_input')
-    train_input.add_argument('--train-resize', type=int, default=(224, 224), nargs='+', help='train image size')
+    train_input.add_argument('--train-size', type=int, default=(224, 224), nargs='+', help='train image size')
+    train_input.add_argument('--train-resize-mode', type=str, default='RandomResizedCrop', help='train image resize mode')
+    train_input.add_argument('--random-crop-pad', type=int, default=0, help='pad size for ResizeRandomCrop')
+    train_input.add_argument('--random-crop-scale', type=float, default=(0.08, 1.0), nargs='+', help='train image resized scale for RandomResizedCrop')
+    train_input.add_argument('--random-crop-ratio', type=float, default=(3/4, 4/3), nargs='+', help='train image resized ratio for RandomResizedCrop')
     train_input.add_argument('--interpolation', type=str, default='bilinear', help='image interpolation mode')
     train_input.add_argument('--mean', type=float, default=(0.485, 0.456, 0.406), nargs='+', help='image mean')
     train_input.add_argument('--std', type=float, default=(0.229, 0.224, 0.225), nargs='+', help='image std')
@@ -17,7 +24,7 @@ def get_args_parser():
     test_input = parser.add_argument_group('test_input')
     test_input.add_argument('--test-size', type=int, default=(224, 224), nargs='+', help='test image size')
     test_input.add_argument('--test-resize-mode', type=str, default='resize_shorter', choices=['resize_shorter', 'resize'], help='test resize mode')
-    test_input.add_argument('--crop-ptr', type=float, default=0.875, help='test image crop percent')
+    test_input.add_argument('--center-crop-ptr', type=float, default=0.875, help='test image crop percent')
 
     # augmentation
     augmentation = parser.add_argument_group('argument')
@@ -31,9 +38,12 @@ def get_args_parser():
     # model
     model = parser.add_argument_group('model')
     model.add_argument('-m', '--model-name', type=str, default='resnet50', help='model name')
+    model.add_argument('--model-type', type=str, default='timm', help='timm or torchvision')
+    model.add_argument('--in-channels', type=int, default=3, help='input channel dimension')
     model.add_argument('--sync-bn', action='store_true', default=False, help='apply sync batchnorm')
     model.add_argument('--ema', action='store_true', default=False, help='apply EMA for model')
     model.add_argument('--ema-decay', type=float, default=0.99999, help='exponential model average decay')
+    model.add_argument('--ema-update-step', type=int, default=10, help='update ema weight period')
     model.add_argument('--pretrained', action='store_true', default=False, help='load pretrained weight')
 
     # criterion
