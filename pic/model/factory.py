@@ -11,7 +11,7 @@ def get_model(args):
     if args.model_type == 'torchvision':
         model = torchvision.models.__dict__[args.model_name](num_classes=args.num_classes, pretrained=args.pretrained).cuda(args.device)
     elif args.model_type == 'timm':
-        model = timm.create_model(args.model_name, in_chans=args.in_channels, pretrained=args.pretrained).cuda(args.device)
+        model = timm.create_model(args.model_name, in_chans=args.in_channels, drop_path_rate=args.drop_path_rate, pretrained=args.pretrained).cuda(args.device)
     else:
         raise Exception(f"{args.model_type} is not supported yet")
 
