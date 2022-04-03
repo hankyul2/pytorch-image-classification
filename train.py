@@ -67,7 +67,7 @@ def main(args):
             best_epoch = epoch
 
         save_checkpoint(args.log_dir, model, ema_model, optimizer,
-                        scaler, scheduler, is_best=best_epoch == epoch)
+                        scaler, scheduler, epoch, is_best=best_epoch == epoch)
 
 
 if __name__ == '__main__':
