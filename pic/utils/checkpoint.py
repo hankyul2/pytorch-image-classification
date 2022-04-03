@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import torch
 
@@ -55,6 +56,9 @@ def save_checkpoint(save_dir, model, ema_model, optimizer, scaler, scheduler, ep
     torch.save(checkpoint_dict, os.path.join(save_dir, f'checkpoint_last.pth'))
     if is_best:
         torch.save(checkpoint_dict, os.path.join(save_dir, f'checkpoint_best.pth'))
+    if epoch >= 10:
+        Path(os.path.join(save_dir, f'checkpoint_{epoch-10}.pth')).unlink(missing_ok=True)
+
 
 
 
