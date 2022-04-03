@@ -23,7 +23,7 @@ def get_dataset(args):
         args.num_classes = len(train_dataset.classes)
     elif args.dataset_type in ['CIFAR10', 'CIFAR100', 'FashionMNIST']:
         train_dataset = dataset_class(args.data_dir, train=True, download=True, transform=train_transform)
-        val_dataset = dataset_class(args.data_dir, train=True, download=True, transform=val_transform)
+        val_dataset = dataset_class(args.data_dir, train=False, download=True, transform=val_transform)
         args.num_classes = len(train_dataset.classes)
     else:
         assert f"{args.dataset_type} is not supported yet. Just make your own code for it"
