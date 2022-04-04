@@ -38,9 +38,10 @@ def get_args_parser():
     # model
     model = parser.add_argument_group('model')
     model.add_argument('-m', '--model-name', type=str, default='resnet50', help='model name')
-    model.add_argument('--model-type', type=str, default='timm', help='timm or torchvision')
+    model.add_argument('--model-type', type=str, default='timm', help='timm or torchvision or pic')
     model.add_argument('--in-channels', type=int, default=3, help='input channel dimension')
     model.add_argument('--drop-path-rate', type=float, default=0.0, help='stochastic depth rate')
+    model.add_argument('--dropout', type=float, default=0.1, help='dropout rate')
     model.add_argument('--sync-bn', action='store_true', default=False, help='apply sync batchnorm')
     model.add_argument('--ema', action='store_true', default=False, help='apply EMA for model')
     model.add_argument('--ema-decay', type=float, default=0.99999, help='exponential model average decay')
