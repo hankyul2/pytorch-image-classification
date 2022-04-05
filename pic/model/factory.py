@@ -4,7 +4,7 @@ import torch.nn as nn
 import torchvision
 from torch.nn.parallel import DistributedDataParallel
 
-from pic.model import ModelEmaV2, AlexNet
+from pic.model import ModelEmaV2, create_model
 
 
 def get_model(args):
@@ -13,7 +13,7 @@ def get_model(args):
     elif args.model_type == 'timm':
         model = timm.create_model(args.model_name, in_chans=args.in_channels, drop_path_rate=args.drop_path_rate, pretrained=args.pretrained).cuda(args.device)
     elif args.model_type == 'pic':
-        model = AlexNet(ch=args.in_channels, dropout=args.dropout, nclass=args.num_classes).cuda(args.device)
+        model = create_model(args.model_name, ch=args.in_channels, dropout=args.dropout, nclass=args.num_classes).cuda(args.device)
     else:
         raise Exception(f"{args.model_type} is not supported yet")
 

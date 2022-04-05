@@ -1,5 +1,12 @@
 from torch import nn
 
+from pic.model.register import register_model
+
+
+model_config = {
+    'alexnet': {'parameter':{}, 'etc':{}}
+}
+
 
 class ConvActPool(nn.Sequential):
     def __init__(self, in_ch=1, out_ch=96, k_size=11, stride=4, pad=0, pool=True, pool_k_size=3, pool_stride=2):
@@ -12,6 +19,7 @@ class LinearActDropout(nn.Sequential):
         super().__init__(nn.Linear(in_ch, out_ch), nn.ReLU(inplace=True), nn.Dropout(p=dropout))
 
 
+@register_model
 class AlexNet(nn.Module):
     def __init__(self, ch=3, dropout=0.5, nclass=10):
         super(AlexNet, self).__init__()
