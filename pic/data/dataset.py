@@ -2,13 +2,13 @@ import os
 
 from torchvision.datasets import ImageFolder, CIFAR10, CIFAR100, FashionMNIST
 
-from pic.data import TrainTransform, ValTransform
-
+from pic.data import TrainTransform, ValTransform, MyCIFAR100
 
 dataset_dict = {
     'ImageFolder': ImageFolder,
     'CIFAR10': CIFAR10,
     'CIFAR100': CIFAR100,
+    'MyCIFAR100': MyCIFAR100,
     'FashionMNIST': FashionMNIST
 }
 
@@ -24,6 +24,10 @@ def get_dataset(args):
     elif args.dataset_type in ['CIFAR10', 'CIFAR100', 'FashionMNIST']:
         train_dataset = dataset_class(args.data_dir, train=True, download=True, transform=train_transform)
         val_dataset = dataset_class(args.data_dir, train=False, download=True, transform=val_transform)
+        args.num_classes = len(train_dataset.classes)
+    elif args.dataset_type in ['MyCIFAR100']:
+        train_dataset = dataset_class(args.data_dir, train=True, download=True, size=args.train_size, pad=args.random_crop_pad, interpolation=args.interpolation, remode=args.remode)
+        val_dataset = dataset_class(args.data_dir, train=False, download=True, size=args.test_size, interpolation=args.interpolation)
         args.num_classes = len(train_dataset.classes)
     else:
         assert f"{args.dataset_type} is not supported yet. Just make your own code for it"
