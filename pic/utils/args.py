@@ -73,6 +73,7 @@ def get_args_parser():
     # scheduler
     scheduler = parser.add_argument_group('scheduler')
     scheduler.add_argument('--scheduler', type=str, default='cosine', help='lr scheduler')
+    scheduler.add_argument('--three-phase', action='store_true', help='one cycle lr three phase')
     scheduler.add_argument('--step-size', type=int, default=2, help='lr decay step size')
     scheduler.add_argument('--decay-rate', type=float, default=0.1, help='lr decay rate')
     scheduler.add_argument('--min-lr', type=float, default=1e-6, help='lowest lr used for cosine scheduler')

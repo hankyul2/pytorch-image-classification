@@ -28,7 +28,7 @@ def get_optimizer_and_scheduler(model, args):
     elif args.scheduler =='explr':
         main_scheduler = ExponentialLR(optimizer, gamma=args.decay_rate)
     elif args.scheduler == 'onecyclelr':
-        main_scheduler = OneCycleLR(optimizer, args.lr, total_iter)
+        main_scheduler = OneCycleLR(optimizer, args.lr, total_iter, three_phase=args.three_phase)
     else:
         NotImplementedError(f"{args.scheduler} is not supported yet")
 
