@@ -66,7 +66,7 @@ def main(args):
             best_acc = top1
             best_epoch = epoch
 
-        if args.is_rank_zero:
+        if args.save_checkpoint and args.is_rank_zero:
             save_checkpoint(args.log_dir, model, ema_model, optimizer,
                             scaler, scheduler, epoch, is_best=best_epoch == epoch)
 

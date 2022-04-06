@@ -109,6 +109,7 @@ def get_args_parser():
     setup.add_argument('-p', '--print-freq', type=int, default=50, help='how often print metric in iter')
     setup.add_argument('--print-flops', action='store_true', default=False, help='print flops in model information using deepspeed library')
     setup.add_argument('-s', '--seed', type=int, default=None, help='fix seed')
+    setup.add_argument('--save-checkpoint', action='store_true', help='if enabled, it stores checkpoint during training')
     setup.add_argument('--use-deterministic', action='store_true', default=False, help='use deterministic algorithm (slow, but better for reproduction)')
 
     return parser
