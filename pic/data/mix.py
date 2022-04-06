@@ -19,7 +19,7 @@ class MixUP:
         if target.ndim == 1:
             target = F.one_hot(target, num_classes=self.nclass).to(dtype=batch.dtype)
 
-        ratio = 1 - torch._sample_dirichlet(torch.tensor([self.alpha, self.alpha]))[0]
+        ratio = float(1 - torch._sample_dirichlet(torch.tensor([self.alpha, self.alpha]))[0])
 
         batch_roll = batch.roll(1, 0)
         target_roll = target.roll(1, 0)
@@ -45,7 +45,7 @@ class CutMix:
             target = F.one_hot(target, num_classes=self.nclass).to(dtype=batch.dtype)
 
         B, C, H, W = batch.shape
-        ratio = 1 - torch._sample_dirichlet(torch.tensor([self.alpha, self.alpha]))[0]
+        ratio = float(1 - torch._sample_dirichlet(torch.tensor([self.alpha, self.alpha]))[0])
 
         batch_roll = batch.roll(1, 0)
         target_roll = target.roll(1, 0)
@@ -60,7 +60,7 @@ class CutMix:
         start_y = max(r - width_half, 0)
         end_y = min(r + width_half, W)
 
-        ratio = 1 - (end_x - start_x) * (end_y - start_y)
+        ratio = 1 - ((end_x - start_x) * (end_y - start_y) / (H * W))
 
         batch[:, :, start_x:end_x, start_y:end_y] = batch_roll[:, :, start_x:end_x, start_y:end_y]
         target = target * (1-ratio) + target_roll * ratio
