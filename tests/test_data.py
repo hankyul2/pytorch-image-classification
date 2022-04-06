@@ -3,7 +3,8 @@ import torch
 from PIL import Image
 
 from pic.data.transforms import TrainTransform, ValTransform
-from pic.data.mix import MixUP, CutMix, mix_target, get_cutmix_bounding_box
+from pic.data.mix import MixUP, CutMix, get_cutmix_bounding_box
+from pic.data.mix_timm import mix_target
 
 
 @pytest.fixture

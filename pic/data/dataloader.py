@@ -1,4 +1,6 @@
 from torch.utils.data import DistributedSampler, RandomSampler, SequentialSampler, DataLoader
+from torch.utils.data.dataloader import default_collate
+from torchvision.transforms import RandomChoice
 
 from pic.data import MixUP, CutMix, RepeatAugSampler
 
@@ -15,16 +17,18 @@ def get_dataloader(train_dataset, val_dataset, args):
         train_sampler = RandomSampler(train_dataset)
         val_sampler = SequentialSampler(val_dataset)
 
-    collate_fn = None
-
     # 2. create collate_fn
-    args.use_mixup = args.mixup or args.cutmix
+    mix_collate = []
     if args.mixup:
-        # collate_fn.append(MixUP())
-        collate_fn = MixUP()
-    elif args.cutmix:
-        # collate_fn.append(CutMix())
-        collate_fn = CutMix()
+        mix_collate.append(MixUP(alpha=args.mixup, nclass=args.num_classes))
+    if args.cutmix:
+        mix_collate.append(CutMix(alpha=args.mixup, nclass=args.num_classes))
+
+    if mix_collate:
+        mix_collate = RandomChoice(mix_collate)
+        collate_fn = lambda batch: mix_collate(*default_collate(batch))
+    else:
+        collate_fn = None
 
     # 3. create dataloader
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, sampler=train_sampler,
