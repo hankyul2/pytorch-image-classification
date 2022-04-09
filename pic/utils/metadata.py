@@ -10,7 +10,7 @@ except:
 def print_metadata(model, train_dataset, test_dataset, args):
     title = 'INFORMATION'
     table = [('Project Name', args.project_name), ('Project Administrator', args.who),
-             ('Experiment Name', args.exp_name), ('Experiment Start Time', datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
+             ('Experiment Name', args.exp_name), ('Experiment Start Time', args.start_time),
              ('Experiment Model Name', args.model_name), ('Experiment Log Directory', args.log_dir)]
     print_tabular(title, table, args)
 

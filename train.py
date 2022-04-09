@@ -1,5 +1,8 @@
+import time
+import datetime
+
 from pic.utils import setup, get_args_parser, save_checkpoint, resume_from_checkpoint, print_metadata, \
-    add_model_argument_to_exp_target
+    add_model_argument_to_exp_target, Result
 from pic.data import get_dataset, get_dataloader
 from pic.model import get_model, get_ema_ddp_model
 from pic.criterion import get_scaler_criterion
@@ -50,6 +53,9 @@ def main(args):
     # 7. train
     best_epoch = 0
     best_acc = 0
+    top1_list = []
+    top5_list = []
+    start_time = time.time()
 
     for epoch in range(start_epoch, end_epoch):
         if args.distributed:
@@ -66,10 +72,19 @@ def main(args):
         if best_acc < top1:
             best_acc = top1
             best_epoch = epoch
+        top1_list.append(top1)
+        top5_list.append(top5)
 
         if args.save_checkpoint and args.is_rank_zero:
             save_checkpoint(args.log_dir, model, ema_model, optimizer,
                             scaler, scheduler, epoch, is_best=best_epoch == epoch)
+
+    if args.is_rank_zero:
+        best_acc = round(float(best_acc), 4)
+        top1 = round(float(sum(top1_list[-3:]) / 3), 4)
+        top5 = round(float(sum(top5_list[-3:]) / 3), 4)
+        duration = str(datetime.timedelta(seconds=time.time() - start_time)).split('.')[0]
+        Result(args.output_dir).save_result(args, dict(duration=duration, best_acc=best_acc, avg_top1_acc=top1, avg_top5_acc=top5))
 
 
 if __name__ == '__main__':

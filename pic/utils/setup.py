@@ -82,6 +82,7 @@ def init_logger(args):
     if args.exp_name is None:
         args.exp_name = '_'.join(str(getattr(args, target)) for target in args.exp_target)
 
+    args.start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     args.version_id = len(list(glob.glob(os.path.join(args.output_dir, f'{args.exp_name}_v*'))))
     args.exp_name = f'{args.exp_name}_v{args.version_id}'
     args.log_dir = os.path.join(args.output_dir, args.exp_name)

@@ -4,6 +4,8 @@
 
 
 ## Tutorial
+requirements: torch, torchvision, gdown
+
 How to run this?
 ```bash
 torchrun --nproc_per_node=2 train.py imageNet --cuda 7,8 
