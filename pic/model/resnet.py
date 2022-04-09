@@ -17,7 +17,7 @@ class BasicBlock(nn.Module):
                  drop_path_rate=0.0):
         super(BasicBlock, self).__init__()
         self.conv1 = ConvNormAct(in_channels, out_channels, 3, norm_layer, stride, 1)
-        self.conv2 = ConvNormAct(out_channels, out_channels, 3, norm_layer, stride, 1, act=False)
+        self.conv2 = ConvNormAct(out_channels, out_channels, 3, norm_layer, 1, 1, act=False)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample if downsample else nn.Identity()
         self.drop_path = StochasticDepth(drop_path_rate)
@@ -60,6 +60,14 @@ class StochasticDepth(nn.Module):
         else:
             shape = [x.size(0)] + [1] * (x.ndim - 1) if self.mode == 'row' else [1]
             return x * x.new_empty(shape).bernoulli_(self.survival).div_(self.survival)
+
+
+model_config = {
+    'resnet34': {'parameter':dict(nblock=[3, 4, 6, 3], block=BasicBlock), 'etc':{}},
+    'resnet50': {'parameter':dict(nblock=[3, 4, 6, 3], block=BottleNeck), 'etc':{}},
+    'resnet101': {'parameter': dict(nblock=[3, 4, 23, 3], block=BottleNeck), 'etc': {}},
+    'resnet152': {'parameter': dict(nblock=[3, 8, 36, 3], block=BottleNeck), 'etc': {}},
+}
 
 
 @register_model
@@ -151,9 +159,3 @@ class ResNet(nn.Module):
                     nn.init.constant_(m.bn3.weight, 0)
 
 
-model_config = {
-    'resnet34': {'parameter':dict(nblock=[3, 4, 6, 3], block=BasicBlock), 'etc':{}},
-    'resnet50': {'parameter':dict(nblock=[3, 4, 6, 3], block=BottleNeck), 'etc':{}},
-    'resnet101': {'parameter': dict(nblock=[3, 4, 23, 3], block=BottleNeck), 'etc': {}},
-    'resnet152': {'parameter': dict(nblock=[3, 8, 36, 3], block=BottleNeck), 'etc': {}},
-}
