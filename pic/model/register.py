@@ -3,7 +3,7 @@ from inspect import signature, _empty
 from typing import Iterable
 
 _name_to_model = {}
-_argument_of_model = {}
+_argument_of_model = []
 
 def register_model(fn):
     # 1. load config dict
@@ -18,7 +18,7 @@ def register_model(fn):
             raise ValueError(f"please change {model_name} to another name, it already exists in model_list")
 
         # 2. parse for argument parser
-        parse_for_argparser(fn)
+        parse_for_argparser(fn, model_config, model_name)
 
         # 3. parse for create_model
         parse_for_creator(fn, model_config, model_name)
@@ -40,23 +40,31 @@ def parse_for_creator(fn, model_config, model_name):
     _name_to_model[model_name] = (fn, model_parameter, etc)
 
 
-def parse_for_argparser(fn):
-    model_argument = dict({k: v.annotation for k, v in signature(fn).parameters.items()})
-    for name, type in model_argument.items():
-        if type in [int, float, str]:
-            parse_option = (type, 1)
+def parse_for_argparser(fn, model_config, model_name):
+    model_parameter = dict({k: (v.default, v.annotation) for k, v in signature(fn).parameters.items()})
+    parameter = model_config['parameter']
+    argument_list = []
+
+    for name, (default, val_type) in model_parameter.items():
+        if val_type in [int, float, str]:
+            parse_option = (val_type, None)
         elif type in [Iterable[int], Iterable[float], Iterable[str]]:
-            index = [Iterable[int], Iterable[float], Iterable[str]].index(type)
+            index = [Iterable[int], Iterable[float], Iterable[str]].index(val_type)
             val_type = [int, float, str][index]
             parse_option = (val_type, '+')
+        # Todo: support for boolean type
         else:
             parse_option = None
 
-        if name in _argument_of_model and _argument_of_model[name] != parse_option:
-            raise ValueError(f"{name} argument is duplicated but have different type")
-
         if parse_option:
-            _argument_of_model[name] = parse_option
+            default = parameter.get(name, default)
+            argument_list.append((name, default,)+parse_option)
+
+    _argument_of_model.append((model_name, argument_list))
+
+
+def get_argument_of_model():
+    return _argument_of_model
 
 
 def create_model(model_name, **kwargs):

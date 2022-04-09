@@ -1,4 +1,5 @@
-from pic.utils import setup, get_args_parser, save_checkpoint, resume_from_checkpoint, print_metadata
+from pic.utils import setup, get_args_parser, save_checkpoint, resume_from_checkpoint, print_metadata, \
+    add_model_argument_to_exp_target
 from pic.data import get_dataset, get_dataloader
 from pic.model import get_model, get_ema_ddp_model
 from pic.criterion import get_scaler_criterion
@@ -74,5 +75,6 @@ def main(args):
 if __name__ == '__main__':
     args_parser = get_args_parser()
     args = args_parser.parse_args()
+    add_model_argument_to_exp_target(args)
 
     main(args)

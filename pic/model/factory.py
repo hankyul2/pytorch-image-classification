@@ -1,3 +1,5 @@
+from copy import copy
+
 import timm
 import torch
 import torch.nn as nn
@@ -13,7 +15,9 @@ def get_model(args):
     elif args.model_type == 'timm':
         model = timm.create_model(args.model_name, in_chans=args.in_channels, num_classes=args.num_classes, drop_path_rate=args.drop_path_rate, pretrained=args.pretrained).cuda(args.device)
     elif args.model_type == 'pic':
-        model = create_model(args.model_name, ch=args.in_channels, dropout=args.dropout, nclass=args.num_classes).cuda(args.device)
+        kwargs = copy(args.__dict__)
+        kwargs.pop('model_name')
+        model = create_model(args.model_name, **kwargs).cuda(args.device)
     else:
         raise Exception(f"{args.model_type} is not supported yet")
 

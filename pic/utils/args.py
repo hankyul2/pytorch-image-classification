@@ -1,5 +1,19 @@
 import argparse
+from pic.model import get_argument_of_model
 
+
+def add_sub_command(parser):
+    subparsers = parser.add_subparsers(title='model commands', description='model specific argument')
+    for model_name, argument_list in get_argument_of_model():
+        subparser = subparsers.add_parser(model_name)
+        for arg_name, default, val_type, nargs in argument_list:
+            subparser.add_argument(f'--{arg_name}', type=val_type, default=default, nargs=nargs)
+
+def add_model_argument_to_exp_target(args):
+    for model_name, argument_list in get_argument_of_model():
+        if model_name == args.model_name:
+            args.exp_target += [name for name, _, _, _ in argument_list]
+            break
 
 def get_args_parser():
     parser = argparse.ArgumentParser(description='pytorch-image-classification', add_help=True, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -111,5 +125,7 @@ def get_args_parser():
     setup.add_argument('-s', '--seed', type=int, default=None, help='fix seed')
     setup.add_argument('--save-checkpoint', action='store_true', help='if enabled, it stores checkpoint during training')
     setup.add_argument('--use-deterministic', action='store_true', default=False, help='use deterministic algorithm (slow, but better for reproduction)')
+
+    add_sub_command(parser)
 
     return parser
