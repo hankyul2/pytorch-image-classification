@@ -1,8 +1,8 @@
 import time
 import datetime
 
-from pic.utils import setup, get_args_parser, save_checkpoint, resume_from_checkpoint, print_metadata, \
-    add_model_argument_to_exp_target, Result
+from pic.utils import setup, get_args_parser, save_checkpoint, resume_from_checkpoint
+from pic.utils import add_model_argument_to_exp_target, print_metadata, Result
 from pic.data import get_dataset, get_dataloader
 from pic.model import get_model, get_ema_ddp_model
 from pic.criterion import get_scaler_criterion
@@ -79,6 +79,7 @@ def main(args):
             save_checkpoint(args.log_dir, model, ema_model, optimizer,
                             scaler, scheduler, epoch, is_best=best_epoch == epoch)
 
+    # 8. summary train result in csv
     if args.is_rank_zero:
         best_acc = round(float(best_acc), 4)
         top1 = round(float(sum(top1_list[-3:]) / 3), 4)
