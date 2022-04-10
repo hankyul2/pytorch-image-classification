@@ -30,10 +30,10 @@ def get_dataset(args):
         train_dataset = dataset_class(root=args.data_dir, train=True, download=True, transform=train_transform)
         val_dataset = dataset_class(root=args.data_dir, train=False, download=True, transform=val_transform)
         args.num_classes = len(train_dataset.classes)
-    elif args.dataset_type in ['MyCIFAR100']:
-        train_dataset = dataset_class(args.data_dir, train=True, download=True, size=args.train_size, pad=args.random_crop_pad, interpolation=args.interpolation, remode=args.remode)
-        val_dataset = dataset_class(args.data_dir, train=False, download=True, size=args.test_size, interpolation=args.interpolation)
-        args.num_classes = len(train_dataset.classes)
+    # elif args.dataset_type in ['MyCIFAR100']:
+    #     train_dataset = dataset_class(args.data_dir, train=True, download=True, size=args.train_size, pad=args.random_crop_pad, interpolation=args.interpolation, remode=args.remode)
+    #     val_dataset = dataset_class(args.data_dir, train=False, download=True, size=args.test_size, interpolation=args.interpolation)
+    #     args.num_classes = len(train_dataset.classes)
     else:
         assert f"{args.dataset_type} is not supported yet. Just make your own code for it"
 
