@@ -5,6 +5,8 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 from torchvision.datasets import Caltech101, ImageFolder
 
+from pic.data.dataset import register_dataset
+
 
 def download_cub200(data_root='data'):
     url = 'https://drive.google.com/uc?id=1cxfLzjWRqhdkwAKzbx7I1C4RqmkYrAED'
@@ -41,6 +43,7 @@ def unzip(path_to_zip_file, directory_to_extract_to):
         zip_ref.extractall(directory_to_extract_to)
 
 
+@register_dataset
 class MyCaltech101(Caltech101):
     def __init__(self, *args, train=True, **kwargs):
         super(MyCaltech101, self).__init__(*args, **kwargs)
@@ -54,8 +57,9 @@ class MyCaltech101(Caltech101):
         self.transform = lambda x: self.bc_transform(x.convert('RGB'))
 
 
+@register_dataset
 class MyImageFolder(ImageFolder):
-    def __init__(self, *args, train=True, **kwargs):
+    def __init__(self, *args, train=True, download=False, **kwargs):
         super(MyImageFolder, self).__init__(*args, **kwargs)
         with open(kwargs['root'] + '../{}.txt'.format('train' if train else 'test')) as f:
             self.samples = [
@@ -63,28 +67,31 @@ class MyImageFolder(ImageFolder):
                 img_path in f.readlines()]
 
 
-class MyCUB200(MyImageFolder):
+@register_dataset
+class CUB200(MyImageFolder):
     def __init__(self, *args, download=False, **kwargs):
         kwargs['root'] += '/cub200/images/'
         if download:
             Path("data/zip").mkdir(exist_ok=True)
             download_cub200()
-        super(MyCUB200, self).__init__(*args, **kwargs)
+        super(CUB200, self).__init__(*args, **kwargs)
 
 
-class MyMITIndoor(MyImageFolder):
+@register_dataset
+class MiTIndoor(MyImageFolder):
     def __init__(self, *args, download=False, **kwargs):
         kwargs['root'] += '/mit_indoor/images/'
         if download:
             Path("data/zip").mkdir(exist_ok=True)
             download_mit_indoor()
-        super(MyMITIndoor, self).__init__(*args, **kwargs)
+        super(MiTIndoor, self).__init__(*args, **kwargs)
 
 
-class MyTinyImageNet200(ImageFolder):
+@register_dataset
+class TinyImageNet(ImageFolder):
     def __init__(self, *args, train=True, download=False, **kwargs):
         kwargs['root'] += f'/tiny_imagenet_200/{"train" if train else "val"}'
         if download:
             Path("data/zip").mkdir(exist_ok=True)
             download_tinyimagenet()
-        super(MyTinyImageNet200, self).__init__(*args, **kwargs)
+        super(TinyImageNet, self).__init__(*args, **kwargs)

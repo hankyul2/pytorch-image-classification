@@ -1,6 +1,6 @@
 import argparse
 
-from pic.data import dataset_dict
+from pic.data import _dataset_dict
 from pic.model import get_argument_of_model
 
 
@@ -21,7 +21,7 @@ def get_args_parser():
     parser = argparse.ArgumentParser(description='pytorch-image-classification', add_help=True, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     # data
     parser.add_argument('data_dir', type=str, help='dataset dir')
-    parser.add_argument('--dataset_type', type=str, default='ImageFolder', choices=dataset_dict.keys(), help='dataset type')
+    parser.add_argument('--dataset_type', type=str, default='ImageFolder', choices=_dataset_dict.keys(), help='dataset type')
     parser.add_argument('--train-split', type=str, default='train', help='train split folder name for image folder dataset')
     parser.add_argument('--val-split', type=str, default='val', help='val split folder name for image folder dataset')
 

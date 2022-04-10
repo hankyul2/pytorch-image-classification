@@ -1,7 +1,7 @@
+from .custom_dataset import MyImageFolder, MiTIndoor, CUB200, TinyImageNet, MyCaltech101
 from .mix import MixUP, CutMix
 from .sampler import RepeatAugSampler
 from .cifar import MyCIFAR100
-from .custom_dataset import MyMITIndoor, MyCUB200, MyTinyImageNet200, MyCaltech101
 from .transforms import TrainTransform, ValTransform
 from .dataloader import get_dataloader
-from .dataset import get_dataset, dataset_dict
+from .dataset import get_dataset, _dataset_dict, register_dataset
