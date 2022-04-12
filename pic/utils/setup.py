@@ -1,3 +1,4 @@
+import gc
 import glob
 import logging
 import os
@@ -25,7 +26,15 @@ def allow_print_to_master(is_master):
     __builtin__.print = print
 
 
+def check_need_init():
+    if os.environ.get('INITIALIZED', None):
+        return False
+    else:
+        return True
+
+
 def init_distributed_mode(args):
+    os.environ['INITIALIZED'] = 'TRUE'
     os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
     os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda
     print(f'{datetime.now().strftime("[%Y/%m/%d %H:%M]")} ', end='')
@@ -100,8 +109,22 @@ def init_logger(args):
     args.log = partial(log, logger=args.logger)
 
 
+def clear(args):
+    # 1. clear gpu memory
+    torch.cuda.empty_cache()
+    # 2. clear cpu memory
+    gc.collect()
+    # 3. close logger
+    if args.is_rank_zero:
+        handlers = args.logger.handlers[:]
+        for handler in handlers:
+            args.logger.removeHandler(handler)
+            handler.close()
+
+
 def setup(args):
-    init_distributed_mode(args)
+    if check_need_init():
+        init_distributed_mode(args)
     init_logger(args)
 
     if args.seed is not None:
