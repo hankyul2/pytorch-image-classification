@@ -55,7 +55,7 @@ if __name__ == '__main__':
         pass_required_variable_from_previous_args(args, prev_args)
         for model_name in multi_args.model_name:
             args.setup = setup
-            args.exp_name = None
+            args.exp_name = f"{model_name}_{setup}"
             args.model_name = model_name
             args.model_type = multi_args.model_type
             args.cuda = multi_args.cuda
