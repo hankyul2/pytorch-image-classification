@@ -8,7 +8,7 @@ def compute_mean_std(dataset):
     std_m = Metric(header='std')
     for x, y in data_loader:
         mean_m.update(x.mean(dim=[0, -1, -2]))
-        std_m.update(x.std(dim=[0, -1, -2]))
+        std_m.update(x.std(dim=[-1, -2]).mean(dim=0))
 
     mean = mean_m.compute()
     std = std_m.compute()
