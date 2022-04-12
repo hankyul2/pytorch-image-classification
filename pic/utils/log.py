@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 from pathlib import Path
 
@@ -16,12 +17,12 @@ def write_csv(result_path, data, mode='w'):
             writer.writerow(row)
 
 class Result:
-    def __init__(self, result_path='log'):
-        self.result_path = os.path.join(result_path, 'result.csv')
+    def __init__(self, log_path='log'):
+        self.result_path = os.path.join(log_path, 'result.csv')
 
         # Todo: Change This whenever you apply this utils to other domain
-        self.headers = ['no', 'model_name', 'dataset_type', 'epoch', 'start_time', 'duration',
-                        'best_acc', 'avg_top1_acc', 'avg_top5_acc', 'log_dir']
+        self.headers = ['no', 'setup', 'model_name', 'avg_top1_acc', 'avg_top5_acc', 'duration', 'log_dir',
+                        'start_time', 'dataset_type',  'epoch', 'best_acc']
 
         self.setup_directory()
         self.setup_logfile()
@@ -48,14 +49,15 @@ class Result:
             elif metric.get(column_name, None):
                 result.append(metric.get(column_name, None))
             else:
-                raise AssertionError('Args and Model object does not have : {}'.format(column_name))
+                result.append('')
+                print("Args and Metric object does not have : {}".format(column_name))
         return result
 
     def get_no(self):
         csv_list, csv_dict = self.read_result()
         return len(csv_list)
 
-    def save_result(self, args, metric):
+    def summary(self, args, metric):
         space = 16
         num_metric = 4
         duration, best_acc, top1, top5 = list(metric.values())
@@ -68,3 +70,19 @@ class Result:
         with FileLock("{}.lock".format(self.result_path)):
             result = self.arg2result(args, metric)
             write_csv(self.result_path, [result], mode='a')
+
+    def dump_args(self, args):
+        with open(os.path.join(args.log_dir, 'cmd.json'), 'wt') as f:
+            keys_to_remove = ('device', 'logger', 'log')
+            cmd = dict({key: val for key, val in args.__dict__.items() if key not in keys_to_remove})
+            json.dump(cmd, f, indent=4, ensure_ascii=False)
+
+    def dump_metric(self, log_dir, top1_list, top5_list):
+        metric = [['top1', 'top5']]
+        metric.extend([[round(float(top1), 4), round(float(top5), 4)] for top1, top5 in zip(top1_list, top5_list)])
+        write_csv(os.path.join(log_dir, 'metric.csv'), metric)
+
+    def save_result(self, args, top1_list, top5_list, metric):
+        self.summary(args, metric)
+        self.dump_args(args)
+        self.dump_metric(args.log_dir, top1_list, top5_list)
