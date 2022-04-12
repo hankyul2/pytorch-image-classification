@@ -10,7 +10,7 @@ from pic.optimizer import get_optimizer_and_scheduler
 from pic.use_case import validate, train_one_epoch
 
 
-def main(args):
+def run(args):
     # 0. init ddp & logger
     setup(args)
 
@@ -92,5 +92,4 @@ if __name__ == '__main__':
     args_parser = get_args_parser()
     args = args_parser.parse_args()
     add_model_argument_to_exp_target(args)
-
-    main(args)
+    run(args)
