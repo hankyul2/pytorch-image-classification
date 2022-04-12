@@ -85,7 +85,8 @@ def run(args):
         top1 = round(float(sum(top1_list[-3:]) / 3), 4)
         top5 = round(float(sum(top5_list[-3:]) / 3), 4)
         duration = str(datetime.timedelta(seconds=time.time() - start_time)).split('.')[0]
-        Result(args.output_dir).save_result(args, dict(duration=duration, best_acc=best_acc, avg_top1_acc=top1, avg_top5_acc=top5))
+        Result(args.output_dir).save_result(args, top1_list, top5_list,
+                                            dict(duration=duration, best_acc=best_acc, avg_top1_acc=top1, avg_top5_acc=top5))
 
 
 if __name__ == '__main__':

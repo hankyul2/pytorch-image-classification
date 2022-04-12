@@ -28,18 +28,29 @@ def get_multi_args_parser():
     return parser
 
 
+def pass_required_variable_from_previous_args(args, prev_args=None):
+    if prev_args:
+        required_vars = ['gpu', 'world_size', 'distributed', 'is_rank_zero', 'device']
+        for var in required_vars:
+            exec(f"args.{var} = prev_args.{var}")
+
+
 if __name__ == '__main__':
     multi_args_parser = get_multi_args_parser()
     multi_args = multi_args_parser.parse_args()
+    prev_args = None
 
     for setup in multi_args.setup:
         args_parser = get_args_parser()
         args = args_parser.parse_args(setting_dict[setup].split(' '))
+        pass_required_variable_from_previous_args(args, prev_args)
         for model_name in multi_args.model_name:
             args.epoch = 1
+            args.setup = setup
             args.model_name = model_name
             args.model_type = multi_args.model_type
             args.cuda = multi_args.cuda
             args.output_dir = multi_args.output_dir
             run(args)
             clear(args)
+        prev_args = args
