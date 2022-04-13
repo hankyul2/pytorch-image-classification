@@ -35,7 +35,7 @@ class BottleNeck(nn.Module):
         self.width = width = int(out_channels * (base_width / 64.0)) * groups
         self.out_channels = out_channels * self.factor
         self.conv1 = ConvNormAct(in_channels, width, 1, norm_layer)
-        self.conv2 = ConvNormAct(width, width, 3, norm_layer, stride, 1)
+        self.conv2 = ConvNormAct(width, width, 3, norm_layer, stride, 1, groups=groups)
         self.conv3 = ConvNormAct(width, self.out_channels, 1, norm_layer, act=False)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample if downsample else nn.Identity()
@@ -63,10 +63,16 @@ class StochasticDepth(nn.Module):
 
 
 model_config = {
+    # resnet
     'resnet34': {'parameter':dict(nblock=[3, 4, 6, 3], block=BasicBlock), 'etc':{}},
     'resnet50': {'parameter':dict(nblock=[3, 4, 6, 3], block=BottleNeck), 'etc':{}},
     'resnet101': {'parameter': dict(nblock=[3, 4, 23, 3], block=BottleNeck), 'etc': {}},
     'resnet152': {'parameter': dict(nblock=[3, 8, 36, 3], block=BottleNeck), 'etc': {}},
+
+    # resnext
+    'resnext50_32_4': {'parameter': dict(nblock=[3, 4, 6, 3], groups=32, base_width=4, block=BottleNeck), 'etc': {}},
+    'resnext101_32_4': {'parameter': dict(nblock=[3, 4, 23, 3], groups=32, base_width=4, block=BottleNeck), 'etc': {}},
+    'resnext152_32_4': {'parameter': dict(nblock=[3, 8, 36, 3], groups=32, base_width=4, block=BottleNeck), 'etc': {}},
 }
 
 
