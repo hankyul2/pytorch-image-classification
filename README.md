@@ -15,6 +15,10 @@ torchrun --nproc_per_node=2 train.py imageNet --cuda 7,8
 python3 train.py imageNet --cuda 7 
 ```
 
+```bash
+torchrun --nproc_per_node=2 multi_train.py tiny_a_25 tiny_a_50 cifar100_a_25 cifar100_a_50 cifar10_a_25 cifar10_a_50 -m resnext50_32_4 resnext101_32_4 -c 7,8 -o log/resnext
+```
+
 What does each variable mean?
 - nproc_per_node - control parallelism
 - cuda - control which gpu device to use
