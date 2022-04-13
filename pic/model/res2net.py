@@ -19,9 +19,9 @@ class BasicBlock(nn.Module):
         super(BasicBlock, self).__init__()
         self.scale = scale
         self.stride = stride
-        self.width = width = int(out_channels * (base_width / 64.0))
+        self.width = width = int(out_channels * (base_width / 64.0)) * groups
         self.conv1 = ConvNormAct(in_channels, width * scale, 3, norm_layer, 1, 1)
-        self.conv2 = nn.ModuleList([ConvNormAct(width, width, 3, norm_layer, stride, 1) for _ in range(scale - 1)])
+        self.conv2 = nn.ModuleList([ConvNormAct(width, width, 3, norm_layer, stride, 1, groups) for _ in range(scale - 1)])
         self.conv3 = ConvNormAct(width*scale, out_channels * self.factor, 1, norm_layer, act=False)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample if downsample else nn.Identity()
@@ -50,10 +50,10 @@ class BottleNeck(nn.Module):
         super(BottleNeck, self).__init__()
         self.scale = scale
         self.stride = stride
-        self.width = width = int(out_channels * (base_width / 64.0))
+        self.width = width = int(out_channels * (base_width / 64.0)) * groups
         self.out_channels = out_channels * self.factor
         self.conv1 = ConvNormAct(in_channels, width * scale, 1, norm_layer)
-        self.conv2 = nn.ModuleList([ConvNormAct(width, width, 3, norm_layer, stride, 1) for _ in range(scale - 1)])
+        self.conv2 = nn.ModuleList([ConvNormAct(width, width, 3, norm_layer, stride, 1, groups) for _ in range(scale - 1)])
         self.conv3 = ConvNormAct(width*scale, out_channels * self.factor, 1, norm_layer, act=False)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample if downsample else nn.Identity()
@@ -97,10 +97,17 @@ model_config = {
     'res2net101_18w_4s': {'parameter': dict(nblock=[3, 4, 23, 3], base_width=18, scale=4, block=BottleNeck), 'etc': {}},
     'res2net152_18w_4s': {'parameter': dict(nblock=[3, 8, 36, 3], base_width=18, scale=4, block=BottleNeck), 'etc': {}},
 
+    # Res2Net
     'res2net34_26w_4s': {'parameter': dict(nblock=[3, 4, 6, 3], base_width=26, scale=4, block=BasicBlock), 'etc': {}},
     'res2net50_26w_4s': {'parameter': dict(nblock=[3, 4, 6, 3], base_width=26, scale=4, block=BottleNeck), 'etc': {}},
     'res2net101_26w_4s': {'parameter': dict(nblock=[3, 4, 23, 3], base_width=26, scale=4, block=BottleNeck), 'etc': {}},
     'res2net152_26w_4s': {'parameter': dict(nblock=[3, 8, 36, 3], base_width=26, scale=4, block=BottleNeck), 'etc': {}},
+
+    # Res2Next
+    'res2next34_8c_4w_4s': {'parameter': dict(nblock=[3, 4, 6, 3], groups=8, base_width=4, scale=4, block=BasicBlock), 'etc': {}},
+    'res2next50_8c_4w_4s': {'parameter': dict(nblock=[3, 4, 6, 3], groups=8, base_width=4, scale=4, block=BottleNeck), 'etc': {}},
+    'res2next101_8c_4s_4s': {'parameter': dict(nblock=[3, 4, 23, 3], groups=8, base_width=4, scale=4, block=BottleNeck), 'etc': {}},
+    'res2next152_8c_4s_4s': {'parameter': dict(nblock=[3, 8, 36, 3], groups=8, base_width=4, scale=4, block=BottleNeck), 'etc': {}},
 }
 
 
