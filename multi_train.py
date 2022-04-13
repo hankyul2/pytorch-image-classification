@@ -65,6 +65,9 @@ if __name__ == '__main__':
             args.model_type = multi_args.model_type
             args.cuda = multi_args.cuda
             args.output_dir = multi_args.output_dir
-            run(args)
+            try:
+                run(args)
+            except:
+                pass
             clear(args)
         prev_args = args
