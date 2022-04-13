@@ -23,7 +23,7 @@ class SelectiveKernel(nn.Module):
             ConvNormAct(width, width, 3, norm_layer, stride, dilation, groups, dilation) for dilation in range(1, 1+m)
         ])
         self.fuse = nn.Sequential(nn.AdaptiveAvgPool2d(1), ConvNormAct(width, reduced_dim, 1, norm_layer))
-        self.select = nn.Conv2d(reduced_dim, width * 2, 1, 1, 0)
+        self.select = nn.Conv2d(reduced_dim, width * m, 1, 1, 0)
 
     def forward(self, x):
         features = torch.stack([conv(x) for conv in self.split], dim=1)
