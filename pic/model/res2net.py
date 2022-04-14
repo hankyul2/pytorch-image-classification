@@ -12,10 +12,18 @@ class ConvNormAct(nn.Sequential):
         )
 
 
+class SEUnit(nn.Sequential):
+    def __init__(self, ch, norm_layer, r=16):
+        super(SEUnit, self).__init__(
+            nn.AdaptiveAvgPool2d(1), # squeeze
+            ConvNormAct(ch, ch//r, 1, norm_layer), nn.Conv2d(ch//r, ch, 1, bias=True), nn.Sigmoid(), # excitation
+        )
+
+
 class BasicBlock(nn.Module):
     factor = 1
     def __init__(self, in_channels, out_channels, stride, norm_layer, downsample=None, groups=1, base_width=64,
-                 scale=4, drop_path_rate=0.0):
+                 scale=4, drop_path_rate=0.0, se=False):
         super(BasicBlock, self).__init__()
         self.scale = scale
         self.stride = stride
@@ -27,6 +35,7 @@ class BasicBlock(nn.Module):
         self.downsample = downsample if downsample else nn.Identity()
         self.avg_pool = nn.AvgPool2d(kernel_size=3, stride=stride, padding=1) if stride != 1 else nn.Identity()
         self.drop_path = StochasticDepth(drop_path_rate)
+        self.se = SEUnit(out_channels, norm_layer) if se else nn.Identity()
 
     def forward(self, x):
         out = self.conv1(x)
@@ -40,13 +49,13 @@ class BasicBlock(nn.Module):
         out_groups.append(self.avg_pool(in_groups[self.scale-1]))
         out = torch.cat(out_groups, dim=1)
 
-        return self.relu(self.downsample(x) + self.drop_path(self.conv3(out)))
+        return self.relu(self.downsample(x) + self.drop_path(self.se(self.conv3(out))))
 
 
 class BottleNeck(nn.Module):
     factor = 4
     def __init__(self, in_channels, out_channels, stride, norm_layer, downsample=None, groups=1, base_width=64,
-                 scale=4, drop_path_rate=0.0):
+                 scale=4, drop_path_rate=0.0, se=False):
         super(BottleNeck, self).__init__()
         self.scale = scale
         self.stride = stride
@@ -59,6 +68,7 @@ class BottleNeck(nn.Module):
         self.downsample = downsample if downsample else nn.Identity()
         self.avg_pool = nn.AvgPool2d(kernel_size=3, stride=stride, padding=1) if stride != 1 else nn.Identity()
         self.drop_path = StochasticDepth(drop_path_rate)
+        self.se = SEUnit(self.out_channels, norm_layer) if se else nn.Identity()
 
     def forward(self, x):
         out = self.conv1(x)
@@ -72,7 +82,7 @@ class BottleNeck(nn.Module):
         out_groups.append(self.avg_pool(in_groups[self.scale-1]))
         out = torch.cat(out_groups, dim=1)
 
-        return self.relu(self.downsample(x) + self.drop_path(self.conv3(out)))
+        return self.relu(self.downsample(x) + self.drop_path(self.se(self.conv3(out))))
 
 
 class StochasticDepth(nn.Module):
@@ -103,11 +113,27 @@ model_config = {
     'res2net101_26w_4s': {'parameter': dict(nblock=[3, 4, 23, 3], base_width=26, scale=4, block=BottleNeck), 'etc': {}},
     'res2net152_26w_4s': {'parameter': dict(nblock=[3, 8, 36, 3], base_width=26, scale=4, block=BottleNeck), 'etc': {}},
 
+    # SERes2Net
+    'seres2net34_26w_4s': {'parameter': dict(nblock=[3, 4, 6, 3], base_width=26, scale=4, block=BasicBlock, se=True), 'etc': {}},
+    'seres2net50_26w_4s': {'parameter': dict(nblock=[3, 4, 6, 3], base_width=26, scale=4, block=BottleNeck, se=True), 'etc': {}},
+    'seres2net101_26w_4s': {'parameter': dict(nblock=[3, 4, 23, 3], base_width=26, scale=4, block=BottleNeck, se=True), 'etc': {}},
+    'seres2net152_26w_4s': {'parameter': dict(nblock=[3, 8, 36, 3], base_width=26, scale=4, block=BottleNeck, se=True), 'etc': {}},
+
     # Res2Next
     'res2next34_8c_4w_4s': {'parameter': dict(nblock=[3, 4, 6, 3], groups=8, base_width=4, scale=4, block=BasicBlock), 'etc': {}},
     'res2next50_8c_4w_4s': {'parameter': dict(nblock=[3, 4, 6, 3], groups=8, base_width=4, scale=4, block=BottleNeck), 'etc': {}},
     'res2next101_8c_4s_4s': {'parameter': dict(nblock=[3, 4, 23, 3], groups=8, base_width=4, scale=4, block=BottleNeck), 'etc': {}},
     'res2next152_8c_4s_4s': {'parameter': dict(nblock=[3, 8, 36, 3], groups=8, base_width=4, scale=4, block=BottleNeck), 'etc': {}},
+
+    # SERes2Next
+    'seres2next34_8c_4w_4s': {'parameter': dict(nblock=[3, 4, 6, 3], groups=8, base_width=4, scale=4, block=BasicBlock, se=True),
+                            'etc': {}},
+    'seres2next50_8c_4w_4s': {'parameter': dict(nblock=[3, 4, 6, 3], groups=8, base_width=4, scale=4, block=BottleNeck, se=True),
+                            'etc': {}},
+    'seres2next101_8c_4s_4s': {'parameter': dict(nblock=[3, 4, 23, 3], groups=8, base_width=4, scale=4, block=BottleNeck, se=True),
+                             'etc': {}},
+    'res2next152_8c_4s_4s': {'parameter': dict(nblock=[3, 8, 36, 3], groups=8, base_width=4, scale=4, block=BottleNeck, se=True),
+                             'etc': {}},
 }
 
 
@@ -125,7 +151,8 @@ class Res2Net(nn.Module):
                  zero_init_last=True,
                  num_classes=1000,
                  in_channels=3,
-                 drop_path_rate=0.0,) -> None:
+                 drop_path_rate=0.0,
+                 se=False) -> None:
         super(Res2Net, self).__init__()
         self.groups = groups
         self.num_classes = num_classes
@@ -137,6 +164,7 @@ class Res2Net(nn.Module):
         self.num_block = sum(nblock)
         self.cur_block = 0
         self.drop_path_rate = drop_path_rate
+        self.se = se
 
         self.conv1 = nn.Conv2d(in_channels, self.in_channels, kernel_size=(7, 7), stride=2, padding=(3, 3), bias=False)
         self.bn1 = self.norm_layer(self.in_channels)
@@ -173,7 +201,7 @@ class Res2Net(nn.Module):
                 downsample = None
                 self.in_channels = channels * block.factor
             layers.append(block(in_channels=self.in_channels, out_channels=channels, stride=stride,
-                                norm_layer=self.norm_layer, downsample=downsample, groups=self.groups,
+                                norm_layer=self.norm_layer, downsample=downsample, groups=self.groups, se=self.se,
                                 scale=self.scale, base_width=self.base_width, drop_path_rate=self.get_drop_path_rate()))
         return nn.Sequential(*layers)
 
