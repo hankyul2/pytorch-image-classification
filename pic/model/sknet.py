@@ -14,19 +14,32 @@ class ConvNormAct(nn.Sequential):
 
 
 class SelectiveKernel(nn.Module):
-    def __init__(self, width, groups, stride, norm_layer, m=2, r=16):
+    def __init__(self, width, groups, stride, norm_layer, version='original', m=2, r=16):
         super(SelectiveKernel, self).__init__()
         reduced_dim = max(width//r, 32)
         self.m = m
         self.width = width
-        self.split = nn.ModuleList([
-            ConvNormAct(width, width, 3, norm_layer, stride, dilation, groups, dilation) for dilation in range(1, 1+m)
-        ])
+        self.version = version
         self.fuse = nn.Sequential(nn.AdaptiveAvgPool2d(1), ConvNormAct(width, reduced_dim, 1, norm_layer))
         self.select = nn.Conv2d(reduced_dim, width * m, 1, 1, 0)
 
+        if version == 'original':
+            self.split = nn.ModuleList([ConvNormAct(width, width, 3, norm_layer, stride, dilation, groups, dilation) for dilation in range(1, 1+m) ])
+        elif version == 'timm':
+            self.split = nn.ModuleList([ConvNormAct(width//m, width, 3, norm_layer, stride, dilation, groups, dilation) for dilation in range(1, 1+m) ])
+        elif version == 'ensemble':
+            self.split = ConvNormAct(width, width * m, 3, norm_layer, stride, 1, groups)
+
     def forward(self, x):
-        features = torch.stack([conv(x) for conv in self.split], dim=1)
+        if self.version == 'original':
+            features = [conv(x) for conv in self.split]
+        elif self.version == 'timm':
+            xs = torch.split(x, self.width // self.m, 1)
+            features = [conv(x) for x, conv in zip(xs, self.split)]
+        elif self.version == 'ensemble':
+            features = torch.split(self.split(x), self.width, 1)
+
+        features = torch.stack(features, dim=1)
         z = self.fuse(torch.sum(features, dim=1))
         attn = self.select(z).reshape(-1, self.m, self.width, 1, 1)
         attn = F.softmax(attn, dim=1)
@@ -36,12 +49,12 @@ class SelectiveKernel(nn.Module):
 class BottleNeck(nn.Module):
     factor = 4
     def __init__(self, in_channels, out_channels, stride, norm_layer, downsample=None, groups=1, base_width=64,
-                 drop_path_rate=0.0):
+                 drop_path_rate=0.0, version='original'):
         super(BottleNeck, self).__init__()
         self.width = width = int(out_channels * (base_width / 64.0)) * groups
         self.out_channels = out_channels * self.factor
         self.conv1 = ConvNormAct(in_channels, width, 1, norm_layer)
-        self.conv2 = SelectiveKernel(width, groups, stride, norm_layer)
+        self.conv2 = SelectiveKernel(width, groups, stride, norm_layer, version=version)
         self.conv3 = ConvNormAct(width, self.out_channels, 1, norm_layer, act=False)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample if downsample else nn.Identity()
@@ -69,6 +82,21 @@ class StochasticDepth(nn.Module):
 
 
 model_config = {
+    # resnet
+    'sknet26': {'parameter': dict(nblock=[2, 2, 2, 2], version='original', block=BottleNeck), 'etc': {}},
+    'sknet50': {'parameter': dict(nblock=[3, 4, 6, 3], version='original', block=BottleNeck), 'etc': {}},
+    'sknet101': {'parameter': dict(nblock=[3, 4, 23, 3], version='original', block=BottleNeck), 'etc': {}},
+
+    # resnet - timm
+    'sknet26_timm': {'parameter': dict(nblock=[2, 2, 2, 2], version='timm', block=BottleNeck), 'etc': {}},
+    'sknet50_timm': {'parameter': dict(nblock=[3, 4, 6, 3], version='timm', block=BottleNeck), 'etc': {}},
+    'sknet101_timm': {'parameter': dict(nblock=[3, 4, 23, 3], version='timm', block=BottleNeck), 'etc': {}},
+
+    # resnet - ensemble
+    'sknet26_ensemble': {'parameter': dict(nblock=[2, 2, 2, 2], version='ensemble', block=BottleNeck), 'etc': {}},
+    'sknet50_ensemble': {'parameter': dict(nblock=[3, 4, 6, 3], version='ensemble', block=BottleNeck), 'etc': {}},
+    'sknet101_ensemble': {'parameter': dict(nblock=[3, 4, 23, 3], version='ensemble', block=BottleNeck), 'etc': {}},
+
     # resnext
     'sknet26_32_4': {'parameter': dict(nblock=[2, 2, 2, 2], groups=32, base_width=4, block=BottleNeck), 'etc': {}},
     'sknet50_32_4': {'parameter': dict(nblock=[3, 4, 6, 3], groups=32, base_width=4, block=BottleNeck), 'etc': {}},
@@ -89,7 +117,8 @@ class SKNet(nn.Module):
                  zero_init_last=True,
                  num_classes=1000,
                  in_channels=3,
-                 drop_path_rate=0.0,) -> None:
+                 drop_path_rate=0.0,
+                 version='original') -> None:
         super(SKNet, self).__init__()
         self.groups = groups
         self.num_classes = num_classes
@@ -100,6 +129,7 @@ class SKNet(nn.Module):
         self.num_block = sum(nblock)
         self.cur_block = 0
         self.drop_path_rate = drop_path_rate
+        self.version = version
 
         self.conv1 = nn.Conv2d(in_channels, self.in_channels, kernel_size=(7, 7), stride=2, padding=(3, 3), bias=False)
         self.bn1 = self.norm_layer(self.in_channels)
@@ -137,7 +167,9 @@ class SKNet(nn.Module):
                 self.in_channels = channels * block.factor
             layers.append(block(in_channels=self.in_channels, out_channels=channels, stride=stride,
                                 norm_layer=self.norm_layer, downsample=downsample, groups=self.groups,
-                                base_width=self.base_width, drop_path_rate=self.get_drop_path_rate()))
+                                base_width=self.base_width, drop_path_rate=self.get_drop_path_rate(),
+                                version=self.version,))
+
         return nn.Sequential(*layers)
 
     def forward(self, x):

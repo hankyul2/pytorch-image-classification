@@ -1,6 +1,7 @@
 try:
     from .recyclenet import RecycleNet
     from .sunet import SUNet
+    from .lfnet import LFNet
 except:
     pass
 from .alexnet import AlexNet
