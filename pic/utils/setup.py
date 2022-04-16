@@ -88,12 +88,15 @@ def log(msg, metric=False, logger=None):
 
 
 def init_logger(args):
-    if args.exp_name is None:
-        args.exp_name = '_'.join(str(getattr(args, target)) for target in args.exp_target)
+    if args.resume:
+        args.exp_name = Path(args.checkpoint_path).parents.name
+    else:
+        if args.exp_name is None:
+            args.exp_name = '_'.join(str(getattr(args, target)) for target in args.exp_target)
+        args.version_id = len(list(glob.glob(os.path.join(args.output_dir, f'{args.exp_name}_v*'))))
+        args.exp_name = f'{args.exp_name}_v{args.version_id}'
 
     args.start_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    args.version_id = len(list(glob.glob(os.path.join(args.output_dir, f'{args.exp_name}_v*'))))
-    args.exp_name = f'{args.exp_name}_v{args.version_id}'
     args.log_dir = os.path.join(args.output_dir, args.exp_name)
     args.text_log_path = os.path.join(args.log_dir, 'log.txt')
     args.best_weight_path = os.path.join(args.log_dir, 'best_weight.pth')
@@ -102,7 +105,7 @@ def init_logger(args):
         Path(args.log_dir).mkdir(parents=True, exist_ok=True)
         args.logger = make_logger(args.text_log_path)
         if args.use_wandb:
-            wandb.init(project=args.project_name, name=args.exp_name, config=args)
+            wandb.init(project=args.project_name, name=args.exp_name, config=args, reinit=True, resume=args.resume)
     else:
         args.logger = None
 
@@ -120,6 +123,8 @@ def clear(args):
         for handler in handlers:
             args.logger.removeHandler(handler)
             handler.close()
+        if args.use_wandb:
+            wandb.finish(quiet=True)
 
 
 def setup(args):
