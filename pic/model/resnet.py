@@ -17,7 +17,9 @@ class SEUnit(nn.Sequential):
             nn.AdaptiveAvgPool2d(1), # squeeze
             ConvNormAct(ch, ch//r, 1, norm_layer), nn.Conv2d(ch//r, ch, 1, bias=True), nn.Sigmoid(), # excitation
         )
-
+    def forward(self, x):
+        out = super(SEUnit, self).forward(x)
+        return out * x
 
 class BasicBlock(nn.Module):
     factor = 1
