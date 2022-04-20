@@ -88,6 +88,10 @@ def run(args):
         Result(args.output_dir).save_result(args, top1_list, top5_list,
                                             dict(duration=duration, best_acc=best_acc, avg_top1_acc=top1, avg_top5_acc=top5))
 
+    # 9. save model weight
+    if args.save_last_epoch and args.is_rank_zero:
+        save_checkpoint(args.log_dir, model, ema_model, optimizer, scaler, scheduler, end_epoch-1, is_best=False)
+
 
 if __name__ == '__main__':
     args_parser = get_args_parser()

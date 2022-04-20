@@ -56,8 +56,8 @@ def pass_required_variable_from_previous_args(args, prev_args=None):
             exec(f"args.{var} = prev_args.{var}")
 
 
-def save_arguments(args):
-    if int(os.environ['LOCAL_RANK']) == 0:
+def save_arguments(args, is_master):
+    if is_master:
         print("Multiple Train Setting")
         print(f" - model (num={len(args.model_name)}): {', '.join(args.model_name)}")
         print(f" - setting (num={len(args.setup)}): {', '.join(args.setup)}")
@@ -70,9 +70,10 @@ def save_arguments(args):
 
 
 if __name__ == '__main__':
+    is_master = os.environ.get('LOCAL_RANK', None) is None or int(os.environ['LOCAL_RANK']) == 0
     multi_args_parser = get_multi_args_parser()
     multi_args = multi_args_parser.parse_args()
-    save_arguments(multi_args)
+    save_arguments(multi_args, is_master)
     prev_args = None
 
     for setup in multi_args.setup:
