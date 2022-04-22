@@ -24,7 +24,7 @@ def resume_from_checkpoint(checkpoint_path, model=None, ema_model=None, optimize
         last epoch
     """
     obj_key_list = [(model, ['state_dict', 'model']), (ema_model, ['state_dict_ema', 'model_ema', 'state_dict', 'model']),
-                    (optimizer, ['optimizer']), (scaler, ['scaler']), (scheduler, 'scheduler')]
+                    (optimizer, ['optimizer']), (scaler, ['scaler'])]
     if os.path.isfile(checkpoint_path):
         checkpoint = torch.load(checkpoint_path, map_location='cpu')
 

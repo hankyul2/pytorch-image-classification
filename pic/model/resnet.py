@@ -21,6 +21,7 @@ class SEUnit(nn.Sequential):
         out = super(SEUnit, self).forward(x)
         return out * x
 
+
 class BasicBlock(nn.Module):
     factor = 1
     def __init__(self, in_channels, out_channels, stride, norm_layer, downsample=None, groups=1, base_width=64,
