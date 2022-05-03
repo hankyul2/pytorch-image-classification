@@ -28,13 +28,13 @@ def print_metadata(model, train_dataset, test_dataset, args):
     print_tabular(title, table, args)
 
     if deepspeed and args.print_flops:
-        flops = get_model_profile(model, input_res=(1, 3, 224, 224), print_profile=False, detailed=False)[0]
+        flops = get_model_profile(model, input_res=(1, args.in_channels, 224, 224), print_profile=False, detailed=False)[0]
     else:
         flops = 'install deepspeed & enable print-flops'
 
     title = 'DATA & MODEL'
     table = [('Model Parameters(M)', count_parameters(model)),
-             (f'Model FLOPs(3, 224, 224)', flops),
+             (f'Model FLOPs({args.in_channels}, 224, 224)', flops),
              ('Number of Train Examples', len(train_dataset)),
              ('Number of Valid Examples', len(test_dataset)),
              ('Number of Class', args.num_classes),]

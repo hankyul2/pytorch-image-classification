@@ -1,5 +1,6 @@
 from torch.optim import SGD, AdamW, RMSprop
-from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, ExponentialLR, LambdaLR, SequentialLR, OneCycleLR
+from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR, ExponentialLR, LambdaLR, SequentialLR, OneCycleLR, \
+    MultiStepLR
 
 
 def get_optimizer_and_scheduler(model, args):
@@ -23,6 +24,8 @@ def get_optimizer_and_scheduler(model, args):
 
     if args.scheduler == 'cosine':
         main_scheduler = CosineAnnealingLR(optimizer, total_iter-warmup_iter, args.min_lr)
+    elif args.scheduler == 'multistep':
+        main_scheduler = MultiStepLR(optimizer, args.milestones)
     elif args.scheduler == 'step':
         main_scheduler = StepLR(optimizer, total_iter-warmup_iter, gamma=args.decay_rate)
     elif args.scheduler =='explr':
