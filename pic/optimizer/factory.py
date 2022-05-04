@@ -25,7 +25,7 @@ def get_optimizer_and_scheduler(model, args):
     if args.scheduler == 'cosine':
         main_scheduler = CosineAnnealingLR(optimizer, total_iter-warmup_iter, args.min_lr)
     elif args.scheduler == 'multistep':
-        main_scheduler = MultiStepLR(optimizer, args.milestones)
+        main_scheduler = MultiStepLR(optimizer, [epoch * args.iter_per_epoch for epoch in args.milestones])
     elif args.scheduler == 'step':
         main_scheduler = StepLR(optimizer, total_iter-warmup_iter, gamma=args.decay_rate)
     elif args.scheduler =='explr':
