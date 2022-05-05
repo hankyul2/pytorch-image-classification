@@ -93,6 +93,7 @@ def get_args_parser():
     scheduler.add_argument('--step-size', type=int, default=2, help='lr decay step size')
     scheduler.add_argument('--decay-rate', type=float, default=0.1, help='lr decay rate')
     scheduler.add_argument('--min-lr', type=float, default=1e-6, help='lowest lr used for cosine scheduler')
+    scheduler.add_argument('--restart-epoch', type=int, default=20, help='warmup restart epoch period')
     scheduler.add_argument('--milestones', type=int, nargs='+', default=[150, 225], help='multistep lr decay step')
     scheduler.add_argument('--warmup-scheduler', type=str, default='linear', help='warmup lr scheduler type')
     scheduler.add_argument('--warmup-lr', type=float, default=1e-4, help='warmup start lr')
