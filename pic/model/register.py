@@ -2,6 +2,8 @@ import sys
 from inspect import signature, _empty
 from typing import Iterable
 
+import torch
+
 _name_to_model = {}
 _argument_of_model = []
 
@@ -76,7 +78,13 @@ def create_model(model_name, **kwargs):
 
     # 2. update parameter by kwargs only if it appears in model config
     parameter = dict({k:kwargs.get(k, v) for k, v in parameter.items()})
+    model = creator(**parameter)
 
     # Todo: Add pretrain handler
+    if kwargs.get('pretrained_path', None):
+        state_dict = torch.load(kwargs.get('pretrained_path'), map_location='cpu')
+        if 'state_dict' in state_dict:
+            state_dict = state_dict['state_dict']
+        model.load_state_dict(state_dict)
 
-    return creator(**parameter)
+    return model

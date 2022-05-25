@@ -113,6 +113,7 @@ def get_args_parser():
     control.add_argument('--validate-only', action='store_true', default=False, help='if enabled, evaluate model')
     control.add_argument('--resume', action='store_true', default=False, help='if true, resume from checkpoint_path')
     control.add_argument('--checkpoint-path', type=str, default=None, help='resume checkpoint path')
+    control.add_argument('--pretrained-path', type=str, default=None, help='pretrained checkpoint path')
     control.add_argument('--start-epoch', type=int, default=None, help='start of epoch(override resume epoch)')
     control.add_argument('--end-epoch', type=int, default=None, help='early stop epoch')
 
