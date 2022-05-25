@@ -85,6 +85,6 @@ def create_model(model_name, **kwargs):
         state_dict = torch.load(kwargs.get('pretrained_path'), map_location='cpu')
         if 'state_dict' in state_dict:
             state_dict = state_dict['state_dict']
-        model.load_state_dict(state_dict)
+        model.load_state_dict(state_dict, strict=False)
 
     return model
