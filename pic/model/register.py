@@ -85,6 +85,9 @@ def create_model(model_name, **kwargs):
         state_dict = torch.load(kwargs.get('pretrained_path'), map_location='cpu')
         if 'state_dict' in state_dict:
             state_dict = state_dict['state_dict']
+        if model.num_classes != state_dict['classifier.weight'].shape[0]:
+            state_dict.pop('classifier.weight')
+            state_dict.pop('classifier.bias')
         model.load_state_dict(state_dict, strict=False)
 
     return model
