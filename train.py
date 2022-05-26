@@ -32,8 +32,8 @@ def run(args):
     print_metadata(model, train_dataset, valid_dataset, args)
 
     # 6. control logic for checkpoint & validate
-    if args.checkpoint_path:
-        start_epoch = resume_from_checkpoint(args.checkpoint_path, args.resume, model, ema_model, optimizer, scaler, scheduler)
+    if args.resume:
+        start_epoch = resume_from_checkpoint(args.checkpoint_path, optimizer, scaler, scheduler)
     else:
         start_epoch = 0
 

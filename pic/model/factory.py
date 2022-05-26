@@ -21,6 +21,15 @@ def get_model(args):
     else:
         raise Exception(f"{args.model_type} is not supported yet")
 
+    if args.checkpoint_path:
+        state_dict = torch.load(args.checkpoint_path, map_location='cpu')
+        if 'state_dict' in state_dict:
+            state_dict = state_dict['state_dict']
+        if model.num_classes != state_dict['classifier.weight'].shape[0]:
+            state_dict.pop('classifier.weight')
+            state_dict.pop('classifier.bias')
+        model.load_state_dict(state_dict)
+
     return model
 
 def get_ema_ddp_model(model, args):
