@@ -13,7 +13,7 @@ def get_model(args):
     if args.model_type == 'torchvision':
         model = torchvision.models.__dict__[args.model_name](num_classes=args.num_classes, pretrained=args.pretrained).cuda(args.device)
     elif args.model_type == 'timm':
-        model = timm.create_model(args.model_name, in_chans=args.in_channels, num_classes=args.num_classes, drop_path_rate=args.drop_path_rate, pretrained=args.pretrained, checkpoint_path=args.pretrained_path).cuda(args.device)
+        model = timm.create_model(args.model_name, in_chans=args.in_channels, num_classes=args.num_classes, drop_path_rate=args.drop_path_rate, pretrained=args.pretrained).cuda(args.device)
     elif args.model_type == 'pic':
         kwargs = copy(args.__dict__)
         kwargs.pop('model_name')

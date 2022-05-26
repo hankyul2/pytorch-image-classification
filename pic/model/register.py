@@ -78,16 +78,5 @@ def create_model(model_name, **kwargs):
 
     # 2. update parameter by kwargs only if it appears in model config
     parameter = dict({k:kwargs.get(k, v) for k, v in parameter.items()})
-    model = creator(**parameter)
 
-    # Todo: Add pretrain handler
-    if kwargs.get('pretrained_path', None):
-        state_dict = torch.load(kwargs.get('pretrained_path'), map_location='cpu')
-        if 'state_dict' in state_dict:
-            state_dict = state_dict['state_dict']
-        if model.num_classes != state_dict['classifier.weight'].shape[0]:
-            state_dict.pop('classifier.weight')
-            state_dict.pop('classifier.bias')
-        model.load_state_dict(state_dict, strict=False)
-
-    return model
+    return creator(**parameter)

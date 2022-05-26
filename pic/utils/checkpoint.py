@@ -10,7 +10,7 @@ def load_state_dict_from_checkpoint(checkpoint, key_list):
     return None
 
 
-def resume_from_checkpoint(checkpoint_path, model=None, ema_model=None, optimizer=None, scaler=None, scheduler=None):
+def resume_from_checkpoint(checkpoint_path, resume=False, model=None, ema_model=None, optimizer=None, scaler=None, scheduler=None):
     """resume training from checkpoint
 
     :arg
@@ -23,6 +23,16 @@ def resume_from_checkpoint(checkpoint_path, model=None, ema_model=None, optimize
     :return
         last epoch
     """
+    if not resume:
+        state_dict = torch.load(checkpoint_path, map_location='cpu')
+        if 'state_dict' in state_dict:
+            state_dict = state_dict['state_dict']
+        if model.num_classes != state_dict['classifier.weight'].shape[0]:
+            state_dict.pop('classifier.weight')
+            state_dict.pop('classifier.bias')
+        model.load_state_dict(state_dict)
+        return 0
+
     obj_key_list = [(model, ['state_dict', 'model']), (ema_model, ['state_dict_ema', 'model_ema', 'state_dict', 'model']),
                     (optimizer, ['optimizer']), (scaler, ['scaler'])]
     if os.path.isfile(checkpoint_path):
