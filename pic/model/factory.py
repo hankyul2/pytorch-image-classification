@@ -28,7 +28,7 @@ def get_model(args):
         if model.num_classes != state_dict['classifier.weight'].shape[0]:
             state_dict.pop('classifier.weight')
             state_dict.pop('classifier.bias')
-        model.load_state_dict(state_dict)
+        model.load_state_dict(state_dict, strict=False)
 
     return model
 
