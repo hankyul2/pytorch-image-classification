@@ -25,9 +25,10 @@ def get_model(args):
         state_dict = torch.load(args.checkpoint_path, map_location='cpu')
         if 'state_dict' in state_dict:
             state_dict = state_dict['state_dict']
-        if model.num_classes != state_dict['classifier.weight'].shape[0]:
-            state_dict.pop('classifier.weight')
-            state_dict.pop('classifier.bias')
+        fc_name = 'fc' if 'fc.weight' in state_dict else 'classifier'
+        if model.num_classes != state_dict[f'{fc_name}.weight'].shape[0]:
+            state_dict.pop(f'{fc_name}.weight')
+            state_dict.pop(f'{fc_name}.bias')
         model.load_state_dict(state_dict, strict=False)
 
     return model
