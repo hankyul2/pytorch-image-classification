@@ -3,7 +3,7 @@ import zipfile
 import gdown
 from pathlib import Path
 from sklearn.model_selection import train_test_split
-from torchvision.datasets import Caltech101, ImageFolder
+from torchvision.datasets import Caltech101, ImageFolder, StanfordCars, Flowers102
 
 from pic.data.dataset import register_dataset
 
@@ -55,6 +55,18 @@ class MyCaltech101(Caltech101):
         self.classes = self.categories
         self.bc_transform = self.transform
         self.transform = lambda x: self.bc_transform(x.convert('RGB'))
+
+
+@register_dataset
+class MyStanfordCars(StanfordCars):
+    def __init__(self, *args, train=True, **kwargs):
+        super(MyStanfordCars, self).__init__(*args, split='train' if train else 'test', **kwargs)
+
+
+@register_dataset
+class MyFlowers102(Flowers102):
+    def __init__(self, *args, train=True, **kwargs):
+        super(MyFlowers102, self).__init__(*args, split='train' if train else 'test', **kwargs)
 
 
 @register_dataset
