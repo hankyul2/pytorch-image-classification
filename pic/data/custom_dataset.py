@@ -67,6 +67,7 @@ class MyStanfordCars(StanfordCars):
 class MyFlowers102(Flowers102):
     def __init__(self, *args, train=True, **kwargs):
         super(MyFlowers102, self).__init__(*args, split='train' if train else 'test', **kwargs)
+        self.classes = [i for i in range(102)]
 
 
 @register_dataset
