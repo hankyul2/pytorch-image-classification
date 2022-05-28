@@ -70,7 +70,8 @@ class MyFlowers102(Flowers102):
         self.transform = transform
         self.target_transform = target_transform
 
-        self.split = ('train', 'val') if train else ('test',)
+        # Todo: check if val split is used in train stage in timm settings
+        self.split = ('train',) if train else ('test',)
         self._base_folder = Path(self.root) / "flowers-102"
         self._images_folder = self._base_folder / "jpg"
 
