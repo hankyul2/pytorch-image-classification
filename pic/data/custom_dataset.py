@@ -65,9 +65,34 @@ class MyStanfordCars(StanfordCars):
 
 @register_dataset
 class MyFlowers102(Flowers102):
-    def __init__(self, *args, train=True, **kwargs):
-        super(MyFlowers102, self).__init__(*args, split='train' if train else 'test', **kwargs)
+    def __init__(self, root, train=True, transform=None, target_transform=None, download=False):
+        self.root = root
+        self.transform = transform
+        self.target_transform = target_transform
 
+        self.split = ('train', 'val') if train else ('test',)
+        self._base_folder = Path(self.root) / "flowers-102"
+        self._images_folder = self._base_folder / "jpg"
+
+        if download:
+            self.download()
+
+        if not self._check_integrity():
+            raise RuntimeError("Dataset not found or corrupted. You can use download=True to download it")
+
+        from scipy.io import loadmat
+
+        set_ids = loadmat(self._base_folder / self._file_dict["setid"][0], squeeze_me=True)
+        labels = loadmat(self._base_folder / self._file_dict["label"][0], squeeze_me=True)
+        image_id_to_label = dict(enumerate(labels["labels"].tolist()))
+        self._labels = []
+        self._image_files = []
+        self.classes = [i for i in range(102)]
+
+        for split in self.split:
+            for image_id in set_ids[self._splits_map[split]].tolist():
+                self._labels.append(image_id_to_label[image_id-1]-1)
+                self._image_files.append(self._images_folder / f"image_{image_id:05d}.jpg")
 
 @register_dataset
 class MyImageFolder(ImageFolder):
