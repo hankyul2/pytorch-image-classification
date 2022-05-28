@@ -1,4 +1,5 @@
-from .custom_dataset import MyImageFolder, MiTIndoor, CUB200, TinyImageNet, MyCaltech101
+from .custom_dataset import MyImageFolder, MiTIndoor, CUB200, \
+    TinyImageNet, MyCaltech101, MyFlowers102, MyStanfordCars
 from .mix import MixUP, CutMix
 from .sampler import RepeatAugSampler
 from .cifar import MyCIFAR100
