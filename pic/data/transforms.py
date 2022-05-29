@@ -23,7 +23,7 @@ class TrainTransform:
                 policy = transforms.AutoAugmentPolicy('imagenet')
                 transform_list.append(transforms.AutoAugment(policy=policy, interpolation=interpolation))
             elif auto_aug.startswith('timm-ra'):
-                transform_list.append(rand_augment_transform('rand-m7-mstd0.5', {}))
+                transform_list.append(rand_augment_transform('rand-m9-mstd0.5', {}))
 
         if resize_mode == 'RandomResizedCrop':
             transform_list.append(transforms.RandomResizedCrop(resize, scale=scale, ratio=ratio, interpolation=interpolation))
