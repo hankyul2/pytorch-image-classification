@@ -107,6 +107,7 @@ def get_args_parser():
     train_time.add_argument('--amp', action='store_true', default=False, help='enable native amp(fp16) training')
     train_time.add_argument('--channels-last', action='store_true', default=False, help='change memory format to channels last')
     train_time.add_argument('--cuda', type=str, default='0,1,2,3,4,5,6,7,8', help='CUDA_VISIBLE_DEVICES options')
+    train_time.add_argument('--prefetcher', action='store_true', default=False, help='Enable prefetch loader' )
 
     # control logic (validate & resume & start & end epoch)
     control = parser.add_argument_group('control')

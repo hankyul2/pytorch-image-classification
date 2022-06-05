@@ -1,12 +1,12 @@
 from math import floor
 
 import torch
-from timm.data import rand_augment_transform
+from timm.data import rand_augment_transform, ToNumpy
 from torchvision import transforms
 
 
 class TrainTransform:
-    def __init__(self, resize, resize_mode, pad, scale, ratio, hflip, auto_aug, remode, interpolation, mean, std):
+    def __init__(self, resize, resize_mode, pad, scale, ratio, hflip, auto_aug, remode, interpolation, mean, std, prefetcher=False):
         interpolation = transforms.functional.InterpolationMode(interpolation)
 
         transform_list = []
@@ -33,13 +33,16 @@ class TrainTransform:
         else:
             assert f"{resize_mode} should be RandomResizedCrop and ResizeRandomCrop"
 
-        transform_list.extend([
-            transforms.ToTensor(),
-            transforms.Normalize(mean=mean, std=std)
-        ])
+        if prefetcher:
+            transform_list.append(ToNumpy())
+        else:
+            transform_list.extend([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=mean, std=std)
+            ])
 
-        if remode:
-            transform_list.append(transforms.RandomErasing(remode))
+            if remode:
+                transform_list.append(transforms.RandomErasing(remode))
 
         self.transform_fn = transforms.Compose(transform_list)
 
@@ -48,7 +51,7 @@ class TrainTransform:
 
 
 class ValTransform:
-    def __init__(self, size, resize_mode, crop_ptr, interpolation, mean, std):
+    def __init__(self, size, resize_mode, crop_ptr, interpolation, mean, std, prefetcher=False):
         interpolation = transforms.functional.InterpolationMode(interpolation)
 
         if not isinstance(size, (tuple, list)):
@@ -62,9 +65,15 @@ class ValTransform:
         transform_list = [
             transforms.Resize(resize, interpolation=interpolation),
             transforms.CenterCrop(size),
-            transforms.ToTensor(),
-            transforms.Normalize(mean, std)
         ]
+
+        if prefetcher:
+            transform_list.append(ToNumpy())
+        else:
+            transform_list.extend([
+                transforms.ToTensor(),
+                transforms.Normalize(mean, std)
+            ])
 
         self.transform_fn = transforms.Compose(transform_list)
 

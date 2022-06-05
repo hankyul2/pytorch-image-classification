@@ -24,8 +24,9 @@ def register_dataset(fn):
 
 def get_dataset(args):
     dataset_class = _dataset_dict[args.dataset_type]
-    train_transform = TrainTransform(args.train_size, args.train_resize_mode, args.random_crop_pad, args.random_crop_scale, args.random_crop_ratio, args.hflip, args.auto_aug, args.remode, args.interpolation, args.mean, args.std)
-    val_transform = ValTransform(args.test_size, args.test_resize_mode, args.center_crop_ptr, args.interpolation, args.mean, args.std)
+    train_transform = TrainTransform(args.train_size, args.train_resize_mode, args.random_crop_pad, args.random_crop_scale,
+                                     args.random_crop_ratio, args.hflip, args.auto_aug, args.remode, args.interpolation, args.mean, args.std, args.prefetcher)
+    val_transform = ValTransform(args.test_size, args.test_resize_mode, args.center_crop_ptr, args.interpolation, args.mean, args.std, args.prefetcher)
     if args.dataset_type == 'ImageFolder':
         train_dataset = dataset_class(os.path.join(args.data_dir, args.train_split), train_transform)
         val_dataset = dataset_class(os.path.join(args.data_dir, args.val_split), val_transform)

@@ -25,8 +25,10 @@ def validate(valid_dataloader, model, criterion, args, mode='org'):
 
     for batch_idx, (x, y) in enumerate(valid_dataloader):
         batch_size = x.size(0)
-        x = x.to(args.device)
-        y = y.to(args.device)
+
+        if not args.prefetcher:
+            x = x.to(args.device)
+            y = y.to(args.device)
 
         if args.channels_last:
             x = x.to(memory_format=torch.channels_last)
@@ -86,8 +88,10 @@ def train_one_epoch(train_dataloader, model, optimizer, criterion, args, ema_mod
 
     for batch_idx, (x, y) in enumerate(train_dataloader):
         batch_size = x.size(0)
-        x = x.to(args.device)
-        y = y.to(args.device)
+
+        if not args.prefetcher:
+            x = x.to(args.device)
+            y = y.to(args.device)
 
         if args.channels_last:
             x = x.to(memory_format=torch.channels_last)
