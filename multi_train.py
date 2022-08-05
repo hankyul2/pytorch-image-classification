@@ -3,12 +3,24 @@ import sys
 import argparse
 
 from pathlib import Path
+from traceback import print_exc
 
 from train import run
 from pic.utils import get_args_parser, clear
 
 
 setting_dict = dict(
+    # best settings @ 32
+    cifar10_32="data --dataset_type CIFAR10 --train-size 32 32 --train-resize-mode ResizeRandomCrop --random-crop-pad 4 --test-size 32 32 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.4802 0.4481 0.3975 --std 0.2302 0.2265 0.2262 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.0 --smoothing 0.0 --epoch 300 --optimizer sgd --nesterov --lr 1 --min-lr 1e-4 --weight-decay 1e-4 --warmup-epoch 5 --scheduler cosine -b 256 -j 4 --pin-memory --amp --channels-last",
+    cifar100_32="data --dataset_type CIFAR100 --train-size 32 32 --train-resize-mode ResizeRandomCrop --random-crop-pad 4 --test-size 32 32 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.4914 0.4825 0.4467 --std 0.2471 0.2435 0.2616 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.0 --smoothing 0.0 --epoch 300 --optimizer sgd --nesterov --lr 1 --min-lr 1e-4 --weight-decay 1e-4 --warmup-epoch 5 --scheduler cosine -b 256 -j 4 --pin-memory --amp --channels-last",
+    fashion_32="data --dataset_type FashionMNIST --in-channels 1 --train-size 32 32 --train-resize-mode ResizeRandomCrop --random-crop-pad 4 --test-size 32 32 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.2861 --std 0.3205 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.0 --smoothing 0.0 --epoch 300 --optimizer sgd --nesterov --lr 1 --min-lr 1e-4 --weight-decay 1e-4 --warmup-epoch 5 --scheduler cosine -b 256 -j 4 --pin-memory --amp --channels-last",
+
+    # best settings @ 224
+    cifar10_224="data --dataset_type CIFAR10 --train-size 224 224 --train-resize-mode ResizeRandomCrop --random-crop-pad 28 --test-size 224 224 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.4802 0.4481 0.3975 --std 0.2302 0.2265 0.2262 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.0 --smoothing 0.0 --epoch 300 --optimizer sgd --nesterov --lr 1 --min-lr 1e-4 --weight-decay 1e-4 --warmup-epoch 5 --scheduler cosine -b 256 -j 4 --pin-memory --amp --channels-last",
+    cifar100_224="data --dataset_type CIFAR100 --train-size 224 224 --train-resize-mode ResizeRandomCrop --random-crop-pad 28 --test-size 224 224 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.4914 0.4825 0.4467 --std 0.2471 0.2435 0.2616 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.0 --smoothing 0.0 --epoch 300 --optimizer sgd --nesterov --lr 1 --min-lr 1e-4 --weight-decay 1e-4 --warmup-epoch 5 --scheduler cosine -b 256 -j 4 --pin-memory --amp --channels-last",
+    fashion_224="data --dataset_type FashionMNIST --in-channels 1 --train-size 224 224 --train-resize-mode ResizeRandomCrop --random-crop-pad 28 --test-size 224 224 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.2861 --std 0.3205 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.0 --smoothing 0.0 --epoch 300 --optimizer sgd --nesterov --lr 1 --min-lr 1e-4 --weight-decay 1e-4 --warmup-epoch 5 --scheduler cosine -b 256 -j 4 --pin-memory --amp --channels-last",
+
+    # hyperparameter search
     tiny_a_25="data --dataset_type TinyImageNet --train-size 128 128 --train-resize-mode ResizeRandomCrop --random-crop-pad 16 --test-size 128 128 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.4802 0.4481 0.3975 --std 0.2302 0.2265 0.2262 --cutmix 0.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.1 --smoothing 0.1 --epoch 25 --lr 1e-2 --weight-decay 1e-4 --scheduler onecyclelr -b 256 -j 16 --pin-memory --amp --channels-last",
     tiny_a_50 = "data --dataset_type TinyImageNet --train-size 128 128 --train-resize-mode ResizeRandomCrop --random-crop-pad 16 --test-size 128 128 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.4802 0.4481 0.3975 --std 0.2302 0.2265 0.2262 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.1 --smoothing 0.1 --epoch 50 --lr 1e-2 --weight-decay 1e-4 --scheduler onecyclelr -b 256 -j 16 --pin-memory --amp --channels-last",
     tiny_a_100 = "data --dataset_type TinyImageNet --train-size 128 128 --train-resize-mode ResizeRandomCrop --random-crop-pad 16 --test-size 128 128 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.4802 0.4481 0.3975 --std 0.2302 0.2265 0.2262 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.1 --smoothing 0.1 --epoch 100 --lr 1e-2 --weight-decay 1e-4 --scheduler onecyclelr -b 256 -j 16 --pin-memory --amp --channels-last",
@@ -28,11 +40,6 @@ setting_dict = dict(
     cifar10_b_150 = "data --dataset_type CIFAR10 --train-size 224 224 --train-resize-mode ResizeRandomCrop --random-crop-pad 28 --test-size 224 224 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.4914 0.4822 0.4465 --std 0.2023 0.1994 0.2010 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.1 --smoothing 0.0 --epoch 150 --lr 1e-2 --weight-decay 1e-4 --scheduler onecyclelr -b 256 -j 16 --pin-memory --amp --channels-last",
     cifar10_b_200 = "data --dataset_type CIFAR10 --train-size 224 224 --train-resize-mode ResizeRandomCrop --random-crop-pad 28 --test-size 224 224 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.4914 0.4822 0.4465 --std 0.2023 0.1994 0.2010 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.1 --smoothing 0.0 --epoch 200 --lr 1e-2 --weight-decay 1e-4 --scheduler onecyclelr -b 256 -j 16 --pin-memory --amp --channels-last",
     fashion_a_50="data --dataset_type FashionMNIST --in-channels 1 --train-size 128 128 --train-resize-mode ResizeRandomCrop --random-crop-pad 16 --test-size 128 128 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.2861 --std 0.3205 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.1 --smoothing 0.1 --epoch 50 --lr 1e-3 --weight-decay 1e-4 --scheduler onecyclelr -b 256 -j 8 --pin-memory --amp --channels-last --print-flops",
-
-    # smaller batch setting
-    tiny_b_100_128b="data --dataset_type TinyImageNet --train-size 224 224 --train-resize-mode ResizeRandomCrop --random-crop-pad 28 --test-size 224 224 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.4802 0.4481 0.3975 --std 0.2302 0.2265 0.2262 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.1 --smoothing 0.0 --epoch 100 --lr 5e-3 --weight-decay 1e-4 --scheduler onecyclelr -b 128 -j 16 --pin-memory --amp --channels-last",
-    cifar100_b_100_128b="data --dataset_type CIFAR100 --train-size 224 224 --train-resize-mode ResizeRandomCrop --random-crop-pad 28 --test-size 224 224 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.5070 0.4865 0.4409 --std 0.2009 0.1984 0.2023 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.1 --smoothing 0.0 --epoch 100 --lr 5e-3 --weight-decay 1e-4 --scheduler onecyclelr -b 128 -j 16 --pin-memory --amp --channels-last",
-    cifar10_b_100_128b="data --dataset_type CIFAR10 --train-size 224 224 --train-resize-mode ResizeRandomCrop --random-crop-pad 28 --test-size 224 224 --center-crop-ptr 1.0 --interpolation bicubic --mean 0.4914 0.4822 0.4465 --std 0.2023 0.1994 0.2010 --cutmix 1.0 --mixup 0.0 --remode 0.0 --drop-path-rate 0.1 --smoothing 0.0 --epoch 100 --lr 5e-3 --weight-decay 1e-4 --scheduler onecyclelr -b 128 -j 16 --pin-memory --amp --channels-last",
 )
 
 
@@ -91,6 +98,6 @@ if __name__ == '__main__':
             try:
                 run(args)
             except:
-                pass
+                print(print_exc())
             clear(args)
         prev_args = args
