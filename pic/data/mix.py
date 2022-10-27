@@ -60,7 +60,7 @@ class CutMix:
         start_y = max(r - width_half, 0)
         end_y = min(r + width_half, W)
 
-        ratio = 1 - ((end_x - start_x) * (end_y - start_y) / (H * W))
+        ratio = (end_x - start_x) * (end_y - start_y) / (H * W)
 
         batch[:, :, start_x:end_x, start_y:end_y] = batch_roll[:, :, start_x:end_x, start_y:end_y]
         target = target * (1-ratio) + target_roll * ratio
