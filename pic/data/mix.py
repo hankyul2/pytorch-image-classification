@@ -57,8 +57,8 @@ class CutMix:
 
         start_x = max(r - height_half, 0)
         end_x = min(r + height_half, H)
-        start_y = max(r - width_half, 0)
-        end_y = min(r + width_half, W)
+        start_y = max(c - width_half, 0)
+        end_y = min(c + width_half, W)
 
         ratio = (end_x - start_x) * (end_y - start_y) / (H * W)
 
