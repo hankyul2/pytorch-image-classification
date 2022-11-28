@@ -33,7 +33,8 @@ def get_dataloader(train_dataset, val_dataset, args):
 
     # 3. create dataloader
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=False, sampler=train_sampler,
-                                  num_workers=args.num_workers, collate_fn=collate_fn, pin_memory=args.pin_memory)
+                                  num_workers=args.num_workers, collate_fn=collate_fn, pin_memory=args.pin_memory,
+                                  drop_last=args.drop_last)
 
     val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, sampler=val_sampler,
                                   num_workers=args.num_workers, collate_fn=None, pin_memory=False)

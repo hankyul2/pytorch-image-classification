@@ -35,6 +35,7 @@ def get_args_parser():
     train_input.add_argument('--interpolation', type=str, default='bilinear', help='image interpolation mode')
     train_input.add_argument('--mean', type=float, default=(0.485, 0.456, 0.406), nargs='+', help='image mean')
     train_input.add_argument('--std', type=float, default=(0.229, 0.224, 0.225), nargs='+', help='image std')
+    train_input.add_argument('--drop-last', action='store_true', help='enable drop_last in train dataloader')
 
     # test input
     test_input = parser.add_argument_group('test_input')
